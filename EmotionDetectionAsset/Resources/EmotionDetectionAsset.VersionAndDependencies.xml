@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<version>
+  <id>EmotionDetectionAsset</id>
+  <major>0</major>
+  <minor>1</minor>
+  <build>1</build>
+  <!--
+  <revision></revision>
+  -->
+  <maturity>alpha</maturity>
+  <dependencies>
+  <!--
+    <depends minVersion="1.2.3">Logger</depends>
+  -->  
+  </dependencies>
+</version>
