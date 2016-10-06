@@ -1,9 +1,7 @@
-﻿using System;
-namespace dlib_csharp
+﻿
+namespace AssetPackage
 {
-    using System.Drawing;
-    using System.Drawing.Imaging;
-    using System.IO;
+    using System;
     using System.Reflection;
     using System.Windows.Forms;
 
@@ -12,25 +10,6 @@ namespace dlib_csharp
     /// </summary>
     public static class Extensions
     {
-        /// <summary>
-        /// A Bitmap extension method that converts an image to a byte array.
-        /// </summary>
-        ///
-        /// <param name="image">    The image to act on. </param>
-        ///
-        /// <returns>
-        /// image as a byte[].
-        /// </returns>
-        public static byte[] ToByteArray(this Bitmap image)
-        {
-            using (var ms = new MemoryStream())
-            {
-                image.Save(ms, ImageFormat.Bmp);
-                //image.Save(ms, image.RawFormat);
-                return ms.ToArray();
-            }
-        }
-
         /// <summary>
         /// Sets double buffered.
         /// </summary>

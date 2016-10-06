@@ -14,11 +14,15 @@ namespace AssetPackage
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
 
-    //! TODO Dynamically Load DLL.
-    //! TODO DlibWrapper.dll Path should be a (static) property.
-    //! TODO Database Path should be a (static) property.
-    //! TODO Add Emotion StripChart in Demo.
-    //! TODO Output emotions for all faces in Demo.
+    //! TODO Dynamically Load DLL (now it should be on the path).
+    //! TODO Add scaling factor.
+    //! TODO Add Emotion (strip)chart in Demo.
+    //! TODO Read Vectors from file (as it should match the rules input file).
+    //!
+    //! DONE DlibWrapper.dll Path should be a (static) property.
+    //! DONE Grayscale support. 
+    //! DONE Database Path should be a (static) property.
+    //! DONE Output emotions for all faces in Demo.
 
     /// <summary>
     /// An asset.
@@ -58,7 +62,8 @@ namespace AssetPackage
         /// </summary>
         public List<POINT> Vectors = new List<POINT>()
         {
-          	//! Left eyebrow to the left eye
+          	//! Left eyebrow to the left eye.
+          	// 
             new POINT(17,36),   // 0
             new POINT(17,39),   // 1
             new POINT(36,39),   // 2
@@ -71,7 +76,8 @@ namespace AssetPackage
             new POINT(21,39),   // 6
             new POINT(36,39),   //! equal to [2]
 
-            //! Right eyebrow to the right eye
+            //! Right eyebrow to the right eye.
+            // 
             new POINT(22,42),   // 7
             new POINT(22,45),   // 8
             new POINT(42,45),   // 9
@@ -84,7 +90,8 @@ namespace AssetPackage
             new POINT(26,45),   // 14
             new POINT(24,45),   //! equal to [11]
 
-            //! Left eye
+            //! Left eye.
+            // 
             new POINT(37,40),   // 16
             new POINT(37,41),   // 17
             new POINT(40,41),   // 20
@@ -93,6 +100,8 @@ namespace AssetPackage
             new POINT(38,41),   // 22
             new POINT(40,41),   //! equal to [20]
 
+            //! Right eye?
+            // 
             new POINT(43,46),   // 24
             new POINT(43,47),   // 25
             new POINT(46,47),   // 26
@@ -101,51 +110,54 @@ namespace AssetPackage
             new POINT(44,47),   // 28
             new POINT(46,47),   //! equal to [26]
 
-            //! Top of the mouth
+            //! Top of the mouth.
+            // 
             new POINT(48,51),   // 30
             new POINT(51,54),   // 31
             new POINT(48,54),   // 32
 
-            //! Bottom of the mouth
+            //! Bottom of the mouth.
+            // 
             new POINT(48,57),   // 33
             new POINT(54,57),   // 34
             new POINT(48,54),   //! equal to [32]
 
-            //! Left eyebrow
+            //! Left eyebrow.
+            // 
             new POINT(17,19),   // 36
             new POINT(19,21),   // 37
             new POINT(17,21),   // 38
 
-            //! Right eyebrow
+            //! Right eyebrow.
+            // 
             new POINT(22,24),   // 39
             new POINT(24,26),   // 40
             new POINT(22,26),   // 41
 
-            //! Eyebrows to the top nose
+            //! Eyebrows to the top nose.
+            // 
             new POINT(21,27),   // 42
             new POINT(22,27),   // 43
             new POINT(21,22),   // 44
 
-            //! Left eye to the mouth
+            //! Left eye to the mouth.
+            // 
             new POINT(36,60),   // 45
             new POINT(48,60),   // 46
             new POINT(36,48),   // 47
 
-            //! Right eye to the mouth
+            //! Right eye to the mouth.
+            // 
             new POINT(45,64),   // 48
             new POINT(54,64),   // 49
             new POINT(45,54),   // 50
 
-            //! Mouth to eyes
+            //! Mouth to eyes.
+            // 
             new POINT(39,51),   // 51
             new POINT(42,51),   // 52
             new POINT(39,42),   // 53
            };
-
-        /// <summary>
-        /// Hardcoded value for now.
-        /// </summary>
-        //const String database = @"shape_predictor_68_face_landmarks.dat";
 
         /// <summary>
         /// Hardcoded value for now.
@@ -175,8 +187,11 @@ namespace AssetPackage
             PixelFormat.Format1bppIndexed,
             PixelFormat.Format4bppIndexed,
             PixelFormat.Format8bppIndexed,
-            //! Dlib lack support for Format16bppRgb is missing
+
+            //! Dlib lack support for Format16bppRgb is missing.
+
             PixelFormat.Format24bppRgb
+
             //! Dlib lack support for Format32bppRgb (my webcam's default).
         };
 
@@ -233,8 +248,6 @@ namespace AssetPackage
         /// </summary>
         public Boolean DetectEmotionsInLandmarks()
         {
-            //Int32 rec = 0;
-
             Emotions.Clear();
 
             foreach (KeyValuePair<RECT, List<POINT>> kvp in Faces)
@@ -271,7 +284,6 @@ namespace AssetPackage
                 foreach (IGrouping<String, FuzzyExpression> emotion in expressions.GroupBy(p => p.Emotion))
                 {
                     Double orresult = Double.MinValue;
-                    Double weightedsum = 0.0;
 
                     foreach (FuzzyExpression expression in emotion)
                     {
@@ -279,29 +291,15 @@ namespace AssetPackage
 
                         foreach (FuzzyPart part in expression)
                         {
-                            Double tmp = expression.CF * part.Result(ArcCosines);
-
-                            //Log(Severity.Verbose, "Part {0} = {1}", part.ToString(), tmp);
-
                             //! Normal Fuzzy And is just take the min of both operands.
                             //
-                            andresult = Math.Min(andresult, tmp);
+                            andresult = Math.Min(andresult, part.Result(ArcCosines));
                         }
 
-                        //Log(Severity.Verbose, "{0} CF: {1} = {2}", expression.Emotion, expression.CF, andresult);
-
-                        //Debug.Print("   AND {0}", andresult);
-
                         //! Normal Fuzzy Or is just take the max of the operands.
-                        //
-                        orresult = Math.Max(orresult, andresult);
-
-                        //! See https://www.mathematik.uni-marburg.de/~eyke/publications/furiadraft.pdf
-                        //! It suggests a weighted sum. But this will return values above 1 !
-                        //
-                        weightedsum += expression.CF * andresult;
-
-                        //Debug.Print("   OR {0}", orresult);C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\EmotionDetectionAsset\EmotionDetectionAsset_Test\FURIA Fuzzy Logic Rules.txt
+                        //! We multiply the part first with the Certainty Factor (CF).
+                        // 
+                        orresult = Math.Max(orresult, expression.CF * andresult);
                     }
 
                     if (!Emotions.ContainsKey(emotion.Key))
@@ -309,16 +307,8 @@ namespace AssetPackage
                         Emotions.Add(emotion.Key, new List<Double>());
                     }
 
-                    Emotions[emotion.Key].Add(/*weightedsum*/orresult);
+                    Emotions[emotion.Key].Add(orresult);
                 }
-
-                //Debug.Print("[Face {0}]", ++rec);
-                //foreach (KeyValuePair<String, Double> kvp1 in Emotions)
-                //{
-                //    Debug.Print("{0}: {1}", kvp1.Key, kvp1.Value);
-                //}
-
-                //Debug.Print("");
             }
 
             return Emotions.Count != 0;
@@ -400,7 +390,7 @@ namespace AssetPackage
 
                                     //! ____/----\____
 
-                                    fuzzy.var = m.Groups["var"].Value;
+                                    fuzzy.var = Int32.Parse(m.Groups["var"].Value.TrimStart('V'));
                                     fuzzy.lsb = ParseNumber(m, "lsb", Double.NegativeInfinity);
                                     fuzzy.lst = ParseNumber(m, "lst", Double.NegativeInfinity);
                                     fuzzy.rst = ParseNumber(m, "rst", Double.PositiveInfinity);
@@ -477,7 +467,7 @@ namespace AssetPackage
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        public Boolean ProcessImage(Bitmap bmp)
+        public Boolean ProcessImage(Image bmp)
         {
             if (!supported.Contains(bmp.PixelFormat))
             {
@@ -576,14 +566,14 @@ namespace AssetPackage
             return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value);
         }
 
-        //General Solution: https://www.mathsisfun.com/algebra/trig-solving-triangles.html
-        //Solution for this specific problem: https://www.mathsisfun.com/algebra/trig-solving-sss-triangles.html
-        //To solve three sides of the triangle (called an SSS triangle) :
-        //Use The Law of Cosines first to calculate one of the angles
-        //then use The Law of Cosines again to find another angle
-        //and finally use angles of a triangle add to 180° to find the last angle.
         /// <summary>
-        /// We use the "angle" version of the Law of Cosines :
+        /// General Solution: https://www.mathsisfun.com/algebra/trig-solving-triangles.html Solution for
+        /// this specific problem: https://www.mathsisfun.com/algebra/trig-solving-sss-triangles.html
+        /// 
+        /// To solve three sides of the triangle (called an SSS triangle) : Use The Law of Cosines first
+        /// to calculate one of the angles then use The Law of Cosines again to find another angle and
+        /// finally use angles of a triangle add to 180° to find the last angle.
+        ///  We use the "angle" version of the Law of Cosines :
         /// 
         /// cos(C) = (a² + b² − c²)/2ab  
         /// cos(A) = (b² + c² − a²)/2bc  
@@ -634,7 +624,7 @@ namespace AssetPackage
         /// </summary>
         ///
         /// <param name="bmp">  The bitmap. </param>
-        private void DetectFacesInBitmap(Bitmap bmp)
+        private void DetectFacesInBitmap(Image bmp)
         {
             //Bitmap clone = new Bitmap(pictureBox1.Image.Width, pictureBox1.Image.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
             //using (Graphics gr = Graphics.FromImage(clone))
@@ -644,10 +634,15 @@ namespace AssetPackage
 
             //! This is code to make sure dlib accepts the image.
             //! Dlib's image_load.h / load_bmp() only supports 1,4,8 or 24 bits images (so no 16 or 32 bit ones).
-            //
-            Byte[] raw = (!supported.Contains(bmp.PixelFormat)) ?
-                bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format24bppRgb).ToByteArray() :
-                bmp.ToByteArray();
+            Boolean gray = ((EmotionDetectionAssetSettings)settings).GrayScale;
+
+            bmp = gray ? bmp.GrayScale() : bmp;
+
+            Byte[] raw = !supported.Contains(bmp.PixelFormat)
+                ? ((Bitmap)bmp).Clone(
+                    new Rectangle(0, 0, bmp.Width, bmp.Height),
+                    PixelFormat.Format24bppRgb).ToByteArray()
+                : ((Bitmap)bmp).ToByteArray();
 
             //http://stackoverflow.com/questions/209258/dllimport-int-how-to-do-this-if-it-can-be-done
             //http://www.codeproject.com/Questions/187293/Interoperation-C-and-native-Win-C-code-arrays-of
@@ -736,7 +731,14 @@ namespace AssetPackage
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
         {
+            /// <summary>
+            /// The X coordinate.
+            /// </summary>
             public int X;
+
+            /// <summary>
+            /// The Y coordinate.
+            /// </summary>
             public int Y;
 
             #region Constructors
@@ -781,13 +783,36 @@ namespace AssetPackage
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
+            /// <summary>
+            /// The left.
+            /// </summary>
             public int Left;
+
+            /// <summary>
+            /// The top.
+            /// </summary>
             public int Top;
+
+            /// <summary>
+            /// The right.
+            /// </summary>
             public int Right;
+
+            /// <summary>
+            /// The bottom.
+            /// </summary>
             public int Bottom;
 
             #region Constructors
 
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            ///
+            /// <param name="left">     The left. </param>
+            /// <param name="top">      The top. </param>
+            /// <param name="right">    The right. </param>
+            /// <param name="bottom">   The bottom. </param>
             public RECT(int left, int top, int right, int bottom)
             {
                 Left = left;
@@ -800,6 +825,13 @@ namespace AssetPackage
 
             #region Methods
 
+            /// <summary>
+            /// Convert this object into a string representation.
+            /// </summary>
+            ///
+            /// <returns>
+            /// A string that represents this object.
+            /// </returns>
             public override string ToString()
             {
                 return string.Format("{{Left={0},Top={1},Right={2},Bottom={3}}}", Left, Top, Right, Bottom);
@@ -815,7 +847,14 @@ namespace AssetPackage
         {
             #region Fields
 
+            /// <summary>
+            /// The Certainty Factor (CF).
+            /// </summary>
             public Double CF;
+
+            /// <summary>
+            /// The emotion.
+            /// </summary>
             public String Emotion;
 
             #endregion Fields
@@ -831,65 +870,97 @@ namespace AssetPackage
         /// <returns>
         /// A Double.
         /// </returns>
-        //private delegate Double InputNeededDelegate(object sender, EventArgs<Int32> e);
-        //String expr = "(V30 in [159.608, 160.424, inf, inf]) and (V35 in [30.0655, 30.2536, inf, inf]) => Emotions=Happy (CF = 0.97)";
         public class FuzzyExpressions : List<FuzzyExpression>
         {
             #region Constructors
 
+            /// <summary>
+            /// Static constructor.
+            /// </summary>
+            ///
+            /// <remarks>
+            /// Example: "(V30 in [159.608, 160.424, inf, inf]) and (V35 in [30.0655, 30.2536, inf, inf]) =>
+            /// Emotions=Happy (CF = 0.97)";
+            /// 
+            /// Where Vnn are ArcCosine input parameters and the [] bracketed parts are the fuzzy operands
+            /// (trapeziums) the input is held against.
+            /// 
+            /// Fuzzy and means taking the max of the both operands.
+            /// </remarks>
             static FuzzyExpressions()
             {
                 //
             }
 
-            #endregion Constructors            
+            #endregion Constructors
         }
 
         public class FuzzyPart
         {
             #region Fields
 
+            /// <summary>
+            /// The Left Shoulder Bottom.
+            /// </summary>
             public Double lsb;
+
+            /// <summary>
+            /// The Left Shoulder Top.
+            /// </summary>
             public Double lst;
+
+            /// <summary>
+            /// The Right Shoulder Bottom.
+            /// </summary>
             public Double rsb;
+
+            /// <summary>
+            /// The Right Shoulder Top.
+            /// </summary>
             public Double rst;
-            public String var;
+
+            /// <summary>
+            /// The variable.
+            /// </summary>
+            public Int32 var;
 
             #endregion Fields
 
             #region Methods
 
+            /// <summary>
+            /// Result given the input (.
+            /// </summary>
+            ///
+            /// <param name="Input">    The input. </param>
+            ///
+            /// <returns>
+            /// A Double.
+            /// </returns>
             public Double Result(List<Double> Input)
             {
-#warning Quick&Dirty var should be the numeric part after parsing.
-                Double value = Input[Int32.Parse(var.TrimStart('V'))];
+                Double value = Input[var];
 
-                if (value < lsb)
+                if (value >= lsb && value <= rsb)
                 {
-                    // invalid
-                    return 0;
-                }
-                else if (value >= lsb && value < lst)
-                {
-                    // partially valid
-                    return (value - lsb) / (lst - lsb);
-                }
-                else if (value >= lst && value <= rst)
-                {
-                    // valid
-                    return 1;
-                }
-                else if (value > rst && value <= rsb)
-                {
-                    // partially valid
-                    return (rsb - value) / (rsb - rst);
-                }
-                else if (value > rsb)
-                {
-                    // invalid
-                    return 0;
+                    if (value < lst)
+                    {
+                        //! partially valid
+                        return (value - lsb) / (lst - lsb);
+                    }
+                    else if (value >= lst && value <= rst)
+                    {
+                        //! valid
+                        return 1;
+                    }
+                    else if (value > rst)
+                    {
+                        //! partially valid
+                        return (rsb - value) / (rsb - rst);
+                    }
                 }
 
+                //! invalid (value < lsb) or (value > rsb)
                 return 0;
             }
 
@@ -912,29 +983,6 @@ namespace AssetPackage
             }
 
             #endregion Methods
-        }
-
-        /// <summary>
-        /// Arguments for event.
-        /// </summary>
-        ///
-        /// <typeparam name="T">    Generic type parameter. </typeparam>
-        private class EventArgs<T> : EventArgs
-        {
-            #region Constructors
-
-            public EventArgs(T input)
-            {
-                Parameter = input;
-            }
-
-            #endregion Constructors
-
-            #region Properties
-
-            public T Parameter { get; set; }
-
-            #endregion Properties
         }
 
         #endregion Nested Types

@@ -326,26 +326,30 @@ namespace dlib_csharp
         /// <summary>
         /// Draw faces and landmarks.
         /// </summary>
-        public void DrawFacesAndLandmarks()
+        public void DrawFacesAndLandmarks(Image img)
         {
-            using (Graphics g = Graphics.FromImage(pictureBox1.Image))
+            using (Graphics g = Graphics.FromImage(img))
             {
                 Int32 cnt = 1;
 
                 foreach (KeyValuePair<EmotionDetectionAsset.RECT, List<EmotionDetectionAsset.POINT>> kvp in eda.Faces)
                 {
                     //! Faces
+                    // 
                     g.DrawRectangle(
                         new Pen(new SolidBrush(Color.Black)),
                         new Rectangle(kvp.Key.Left, kvp.Key.Top, kvp.Key.Right - kvp.Key.Left, kvp.Key.Bottom - kvp.Key.Top));
 
+                    //! Face Id
+                    // .
                     g.DrawString(
                         String.Format("face: {0}", cnt++),
                         new Font(FontFamily.GenericSansSerif, 10.0f, FontStyle.Bold),
                         new SolidBrush(Color.Yellow),
                         new PointF(kvp.Key.Left, kvp.Key.Top));
 
-                    //! Angles
+                    //! Angles.
+                    // 
                     foreach (EmotionDetectionAsset.POINT vector in eda.Vectors)
                     {
                         g.DrawLine(new Pen(
@@ -354,7 +358,8 @@ namespace dlib_csharp
                             kvp.Value[vector.Y].X, kvp.Value[vector.Y].Y);
                     }
 
-                    //! Landmarks
+                    //! Landmarks.
+                    // 
                     foreach (EmotionDetectionAsset.POINT p in kvp.Value)
                     {
                         g.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
@@ -369,7 +374,6 @@ namespace dlib_csharp
 
         private void webCamCapture1_ImageCaptured(object source, WebCam_Capture.WebcamEventArgs e)
         {
-            //! Set the picturebox picture
             this.pictureBox1.Image = e.WebCamImage;
 
             ProcessImageIntoEmotions(this.pictureBox1.Image);
@@ -381,7 +385,7 @@ namespace dlib_csharp
         {
             //! Skipping does not seem to work properly
             // 
-            if (counter % 2 != 0 || eda.ProcessImage((Bitmap)img))
+            if (counter % 2 != 0 || eda.ProcessImage(img))
             {
                 counter++;
 
@@ -393,7 +397,7 @@ namespace dlib_csharp
                 {
                     //! Show Detection Results.
                     // 
-                    DrawFacesAndLandmarks();
+                    DrawFacesAndLandmarks(img);
 
                     UpdateOutputTable();
                 }
