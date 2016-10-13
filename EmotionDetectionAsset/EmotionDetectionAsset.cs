@@ -283,23 +283,24 @@ namespace AssetPackage
                 //
                 foreach (IGrouping<String, FuzzyExpression> emotion in expressions.GroupBy(p => p.Emotion))
                 {
-                    Double orresult = Double.MinValue;
+                    Double orresult = 0;    //! Classic Fuzzy Logic: Double.MinValue;
 
                     foreach (FuzzyExpression expression in emotion)
                     {
-                        Double andresult = Double.MaxValue;
+                        Double andresult = Double.NaN;  //! Classic Fuzzy Logic: Double.MaxValue;
 
                         foreach (FuzzyPart part in expression)
                         {
                             //! Normal Fuzzy And is just take the min of both operands.
                             //
-                            andresult = Math.Min(andresult, part.Result(ArcCosines));
+                            andresult = Double.IsNaN(andresult) ? part.Result(ArcCosines) : andresult * part.Result(ArcCosines); //! Classic Fuzzy Logic: Math.Min(andresult, part.Result(ArcCosines));
                         }
 
                         //! Normal Fuzzy Or is just take the max of the operands.
                         //! We multiply the part first with the Certainty Factor (CF).
                         // 
-                        orresult = Math.Max(orresult, expression.CF * andresult);
+
+                        orresult += expression.CF * andresult; //! Classic Fuzzy Logic: orresult = Math.Max(orresult, expression.CF * andresult);
                     }
 
                     if (!Emotions.ContainsKey(emotion.Key))

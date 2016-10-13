@@ -12,6 +12,7 @@ namespace dlib_csharp
     using System.Windows.Forms;
     using AssetManagerPackage;
     using AssetPackage;
+    using Accord.Video.FFMPEG;
 
     public partial class Form1 : Form
     {
@@ -228,7 +229,7 @@ namespace dlib_csharp
         {
             pictureBox1.Image = Image.FromFile("Kiavash1.jpg");
 
-            ProcessImageIntoEmotions(pictureBox1.Image);
+            ProcessImageIntoEmotions(pictureBox1.Image, true);
         }
 
         /// <summary>
@@ -376,16 +377,16 @@ namespace dlib_csharp
         {
             this.pictureBox1.Image = e.WebCamImage;
 
-            ProcessImageIntoEmotions(this.pictureBox1.Image);
+            ProcessImageIntoEmotions(this.pictureBox1.Image, true);
 
             //this.webCamCapture1.Stop();
         }
 
-        private void ProcessImageIntoEmotions(Image img)
+        private void ProcessImageIntoEmotions(Image img, Boolean redetect)
         {
             //! Skipping does not seem to work properly
             // 
-            if (counter % 2 != 0 || eda.ProcessImage(img))
+            if (!redetect || eda.ProcessImage(img))
             {
                 counter++;
 
@@ -456,7 +457,12 @@ namespace dlib_csharp
                             }
                             else
                             {
-                                listView1.Items[ndx].SubItems[j + 1].Text = String.Format("{0:0.00}", kvp1.Value[j]);
+                                String emo = String.Format("{0:0.00}", kvp1.Value[j]);
+
+                                if (emo != listView1.Items[ndx].SubItems[j + 1].Text)
+                                {
+                                    listView1.Items[ndx].SubItems[j + 1].Text = emo;
+                                }
                             }
                         }
 
@@ -832,5 +838,33 @@ namespace dlib_csharp
         }
 
         #endregion Nested Types
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            //! Create instance of video reader
+            VideoFileReader reader = new VideoFileReader();
+
+            //! Open video file
+            reader.Open(@"C:\Virtual Machines\X-HRL-A10430\Videos\Wiskunde Academie\Bewijzen - Waarom gaan de zwaartelijnen door 1 punt, het zwaartepunt_ - WiskundeAcademie.mp4");
+
+            Image img;
+
+            // Read 100 video frames out of it
+            for (Int32 i = 0; i < reader.FrameCount; i++)
+            {
+                img = reader.ReadVideoFrame();
+
+                pictureBox1.Image = img;
+
+                //pictureBox1.Refresh();
+
+                ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
+
+                //! Dispose the frame when it is no longer required
+                img.Dispose();
+            }
+
+            reader.Close();
+        }
     }
 }

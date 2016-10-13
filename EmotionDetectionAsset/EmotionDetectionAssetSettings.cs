@@ -21,7 +21,7 @@ namespace AssetPackage
             // Set Default values here.
             Database = @"shape_predictor_68_face_landmarks.dat";
             Rules = @"FURIA Fuzzy Logic Rules.txt";
-            GrayScale = true;
+            GrayScale = false;
         }
 
         #endregion Constructors
@@ -67,16 +67,16 @@ namespace AssetPackage
         /// </value>
         [Description("If true, input images are converted to graysscale before further processing.")]
         [Category("Config")]
+        [DefaultValue(false)]
         public Boolean GrayScale
         {
             get;
             set;
         }
+
 #warning FIR paramaters.
 
 #warning Dlib wrapper filename (if we dynload it).
-
-#warning EMOTION SETTINGS.
 
 #warning Scaled etcs (basic image pre-processing).
 
