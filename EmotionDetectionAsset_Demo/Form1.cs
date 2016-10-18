@@ -13,6 +13,7 @@ namespace dlib_csharp
     using AssetManagerPackage;
     using AssetPackage;
     using Accord.Video.FFMPEG;
+    using System.Windows.Forms.DataVisualization.Charting;
 
     public partial class Form1 : Form
     {
@@ -215,8 +216,30 @@ namespace dlib_csharp
 
         EmotionDetectionAsset eda = new EmotionDetectionAsset();
 
+        /// <summary>
+        /// Init chart.
+        /// </summary>
+        private void InitChart()
+        {
+            chart1.Series.Clear();
+
+            chart1.ChartAreas[0].AxisX.Maximum = 100;
+
+            foreach (String emotion in eda.Emotions)
+            {
+                chart1.Series.Add(emotion).ChartType = SeriesChartType.FastLine;
+
+                //for (Int32 i = 0; i < 100; i++)
+                //{
+                //    chart1.Series[emotion].Points.AddY(0.1);
+                //}
+            }
+        }
+
         private void button4_Click(object sender, EventArgs e)
         {
+            InitChart();
+
             // change the capture time frame
             this.webCamCapture1.TimeToCapture_milliseconds = 20;
 
@@ -331,7 +354,7 @@ namespace dlib_csharp
         {
             using (Graphics g = Graphics.FromImage(img))
             {
-                Int32 cnt = 1;
+                Int32 cnt = 0;
 
                 foreach (KeyValuePair<EmotionDetectionAsset.RECT, List<EmotionDetectionAsset.POINT>> kvp in eda.Faces)
                 {
@@ -382,28 +405,40 @@ namespace dlib_csharp
             //this.webCamCapture1.Stop();
         }
 
+        Boolean facedetected = false;
+
+
         private void ProcessImageIntoEmotions(Image img, Boolean redetect)
         {
             //! Skipping does not seem to work properly
             // 
-            if (!redetect || eda.ProcessImage(img))
+            if (redetect)
             {
-                counter++;
+                facedetected = eda.ProcessImage(img);
 
-                //Debug.WriteLine(String.Format("{0} Face(s detected.", eda.Faces.Count));
-
-                //! Process detect faces.
-                // 
-                if (eda.ProcessFaces())
+                if (facedetected)
                 {
-                    //! Show Detection Results.
-                    // 
-                    DrawFacesAndLandmarks(img);
+                    counter++;
 
-                    UpdateOutputTable();
+                    //Debug.WriteLine(String.Format("{0} Face(s detected.", eda.Faces.Count));
+
+                    //! Process detect faces.
+                    // 
+                    if (eda.ProcessFaces())
+                    {
+                        //! Show Detection Results.
+                        // 
+                        DrawFacesAndLandmarks(img);
+
+                        UpdateOutputTable();
+                    }
+
+                    UpdateChart();
                 }
             }
         }
+
+        //Dictionary<String, List<Double>> History = new Dictionary<String, List<Double>>();
 
         /// <summary>
         /// Updates the output table.
@@ -414,17 +449,19 @@ namespace dlib_csharp
             {
                 if (eda.ProcessLandmarks())
                 {
+                    Boolean first = true;
+
                     foreach (KeyValuePair<EmotionDetectionAsset.RECT, List<EmotionDetectionAsset.POINT>> kvp in eda.Faces)
                     {
                         //! Process detected landmarks into emotions.
                         // 
 
-                        while (listView1.Columns.Count - 1 > eda.Emotions.First().Value.Count)
+                        while (listView1.Columns.Count - 1 > eda.Faces.Count)
                         {
                             listView1.Columns.RemoveAt(1);
                         }
 
-                        while (listView1.Columns.Count - 1 < eda.Emotions.First().Value.Count)
+                        while (listView1.Columns.Count - 1 < eda.Faces.Count)
                         {
                             listView1.Columns.Add(String.Empty).Width = 80;
                         }
@@ -437,9 +474,9 @@ namespace dlib_csharp
 
                     if (listView1.Items.Count == 0)
                     {
-                        foreach (KeyValuePair<String, List<Double>> kvp1 in eda.Emotions)
+                        foreach (String emotion in eda.Emotions)
                         {
-                            listView1.Items.Add(kvp1.Key);//.SubItems.Clear();
+                            listView1.Items.Add(emotion);//.SubItems.Clear();
                         }
                     }
 
@@ -447,21 +484,21 @@ namespace dlib_csharp
                     // 
                     Int32 ndx = 0;
 
-                    foreach (KeyValuePair<String, List<Double>> kvp1 in eda.Emotions)
+                    foreach (String emotion in eda.Emotions)
                     {
-                        for (Int32 j = 0; j < kvp1.Value.Count; j++)
+                        for (Int32 i = 0; i < eda.Faces.Count; i++)
                         {
-                            if (listView1.Items[ndx].SubItems.Count < j + 2)
+                            String emo = String.Format("{0:0.00}", eda[i, emotion]);
+
+                            if (listView1.Items[ndx].SubItems.Count < i + 2)
                             {
-                                listView1.Items[ndx].SubItems.Add(String.Format("{0:0.00}", kvp1.Value[j]));
+                                listView1.Items[ndx].SubItems.Add(emo);
                             }
                             else
                             {
-                                String emo = String.Format("{0:0.00}", kvp1.Value[j]);
-
-                                if (emo != listView1.Items[ndx].SubItems[j + 1].Text)
+                                if (emo != listView1.Items[ndx].SubItems[i + 1].Text)
                                 {
-                                    listView1.Items[ndx].SubItems[j + 1].Text = emo;
+                                    listView1.Items[ndx].SubItems[i + 1].Text = emo;
                                 }
                             }
                         }
@@ -470,10 +507,67 @@ namespace dlib_csharp
                     }
                 }
             }
+
             listView1.EndUpdate();
-            //listView1.Refresh();
-            //Application.DoEvents();
         }
+
+        /// <summary>
+        /// Updates the chart.
+        /// </summary>
+        private void UpdateChart()
+        {
+            //! Plot averaged data...
+            // 
+            foreach (String emotion in eda.Emotions)
+            {
+                chart1.Series[emotion].Points.AddY(eda[0, emotion]);
+
+                chart1.ChartAreas[0].AxisY.Maximum = Double.NaN;
+
+                if (chart1.Series[emotion].Points.Count > 100)
+                {
+                    chart1.Series[emotion].Points.RemoveAt(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event handler. Called by button6 for click events.
+        /// </summary>
+        ///
+        /// <param name="sender">   Source of the event. </param>
+        /// <param name="e">        Event information. </param>
+        private void button6_Click(object sender, EventArgs e)
+        {
+            //! Create instance of video reader
+            VideoFileReader reader = new VideoFileReader();
+
+            //! Open video file
+            reader.Open(@"C:\Virtual Machines\X-HRL-A10430\Videos\Wiskunde Academie\Bewijzen - Waarom gaan de zwaartelijnen door 1 punt, het zwaartepunt_ - WiskundeAcademie.mp4");
+
+            Image img;
+
+            // Read 100 video frames out of it
+            for (Int32 i = 0; i < reader.FrameCount; i++)
+            {
+                img = reader.ReadVideoFrame();
+
+                if (img != null)
+                {
+                    pictureBox1.Image = img;
+
+                    //pictureBox1.Refresh();
+
+                    ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
+
+                    //! Dispose the frame when it is no longer required
+                    img.Dispose();
+                }
+            }
+
+            reader.Close();
+        }
+
         #endregion Methods
 
         #region Nested Types
@@ -839,32 +933,5 @@ namespace dlib_csharp
 
         #endregion Nested Types
 
-        private void button6_Click(object sender, EventArgs e)
-        {
-            //! Create instance of video reader
-            VideoFileReader reader = new VideoFileReader();
-
-            //! Open video file
-            reader.Open(@"C:\Virtual Machines\X-HRL-A10430\Videos\Wiskunde Academie\Bewijzen - Waarom gaan de zwaartelijnen door 1 punt, het zwaartepunt_ - WiskundeAcademie.mp4");
-
-            Image img;
-
-            // Read 100 video frames out of it
-            for (Int32 i = 0; i < reader.FrameCount; i++)
-            {
-                img = reader.ReadVideoFrame();
-
-                pictureBox1.Image = img;
-
-                //pictureBox1.Refresh();
-
-                ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
-
-                //! Dispose the frame when it is no longer required
-                img.Dispose();
-            }
-
-            reader.Close();
-        }
     }
 }

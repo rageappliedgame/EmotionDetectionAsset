@@ -20,9 +20,35 @@ namespace AssetPackage
     //! TODO Read Vectors from file (as it should match the rules input file).
     //!
     //! DONE DlibWrapper.dll Path should be a (static) property.
-    //! DONE Grayscale support. 
+    //! DONE Grayscale support.
     //! DONE Database Path should be a (static) property.
     //! DONE Output emotions for all faces in Demo.
+    /// <summary>
+    /// The detected emotions.
+    /// 
+    /// The Key is the name of the emotion.
+    /// 
+    /// The Value is the fuzzy outcome for the emtion.
+    /// </summary>
+    using DetectedEmotions = System.Collections.Generic.Dictionary<System.String, System.Double>;
+
+    /// <summary>
+    /// The detected face.
+    /// 
+    /// The Key is the detection rectangle.
+    /// 
+    /// The Value is a list of 68 landmark points.
+    /// </summary>
+    using DetectedFace = System.Collections.Generic.KeyValuePair<EmotionDetectionAsset.RECT, System.Collections.Generic.List<EmotionDetectionAsset.POINT>>;
+
+    /// <summary>
+    /// The detected faces.
+    /// 
+    /// The Key is the detection rectangle.
+    /// 
+    /// The Value is a list of 68 landmark points.
+    /// </summary>
+    using DetectedFaces = System.Collections.Generic.Dictionary<EmotionDetectionAsset.RECT, System.Collections.Generic.List<EmotionDetectionAsset.POINT>>;
 
     /// <summary>
     /// An asset.
@@ -32,14 +58,9 @@ namespace AssetPackage
         #region Fields
 
         /// <summary>
-        /// The detected emotions.
+        /// The names of detectable Emotions.
         /// </summary>
-        ///
-        /// <remarks>
-        /// The Dictionary key is the detected emotion.The Dictionary value is a list emotions for every
-        /// detected face.
-        /// </remarks>
-        public Dictionary<String, List<Double>> Emotions = new Dictionary<String, List<Double>>();
+        public List<String> Emotions = new List<String>();
 
         /// <summary>
         /// The list of Fuzzy expressions parsed.
@@ -53,7 +74,7 @@ namespace AssetPackage
         /// <summary>
         /// The detected faces and their landmarks.
         /// </summary>
-        public Dictionary<RECT, List<POINT>> Faces = new Dictionary<RECT, List<POINT>>();
+        public DetectedFaces Faces = new DetectedFaces();
 
         /// <summary>
         /// The vectors used to calculate the angles.
@@ -63,7 +84,7 @@ namespace AssetPackage
         public List<POINT> Vectors = new List<POINT>()
         {
           	//! Left eyebrow to the left eye.
-          	// 
+          	//
             new POINT(17,36),   // 0
             new POINT(17,39),   // 1
             new POINT(36,39),   // 2
@@ -77,7 +98,7 @@ namespace AssetPackage
             new POINT(36,39),   //! equal to [2]
 
             //! Right eyebrow to the right eye.
-            // 
+            //
             new POINT(22,42),   // 7
             new POINT(22,45),   // 8
             new POINT(42,45),   // 9
@@ -91,7 +112,7 @@ namespace AssetPackage
             new POINT(24,45),   //! equal to [11]
 
             //! Left eye.
-            // 
+            //
             new POINT(37,40),   // 16
             new POINT(37,41),   // 17
             new POINT(40,41),   // 20
@@ -101,7 +122,7 @@ namespace AssetPackage
             new POINT(40,41),   //! equal to [20]
 
             //! Right eye?
-            // 
+            //
             new POINT(43,46),   // 24
             new POINT(43,47),   // 25
             new POINT(46,47),   // 26
@@ -111,49 +132,49 @@ namespace AssetPackage
             new POINT(46,47),   //! equal to [26]
 
             //! Top of the mouth.
-            // 
+            //
             new POINT(48,51),   // 30
             new POINT(51,54),   // 31
             new POINT(48,54),   // 32
 
             //! Bottom of the mouth.
-            // 
+            //
             new POINT(48,57),   // 33
             new POINT(54,57),   // 34
             new POINT(48,54),   //! equal to [32]
 
             //! Left eyebrow.
-            // 
+            //
             new POINT(17,19),   // 36
             new POINT(19,21),   // 37
             new POINT(17,21),   // 38
 
             //! Right eyebrow.
-            // 
+            //
             new POINT(22,24),   // 39
             new POINT(24,26),   // 40
             new POINT(22,26),   // 41
 
             //! Eyebrows to the top nose.
-            // 
+            //
             new POINT(21,27),   // 42
             new POINT(22,27),   // 43
             new POINT(21,22),   // 44
 
             //! Left eye to the mouth.
-            // 
+            //
             new POINT(36,60),   // 45
             new POINT(48,60),   // 46
             new POINT(36,48),   // 47
 
             //! Right eye to the mouth.
-            // 
+            //
             new POINT(45,64),   // 48
             new POINT(54,64),   // 49
             new POINT(45,54),   // 50
 
             //! Mouth to eyes.
-            // 
+            //
             new POINT(39,51),   // 51
             new POINT(42,51),   // 52
             new POINT(39,42),   // 53
@@ -173,6 +194,24 @@ namespace AssetPackage
         /// The second regex used to parse the right part of FURIA fuzzy rules.
         /// </summary>
         private static Regex rg2 = new Regex(@"Emotions=(?<emotion>[A-Za-z]*) \(CF = (?<cf>[0-9\.]+)\)");
+
+        ///// <summary>
+        ///// The detected emotions.
+        ///// </summary>
+        /////
+        ///// <remarks>
+        ///// The Dictionary key is the detected emotion.The Dictionary value is a list emotions for every
+        ///// detected face.
+        ///// </remarks>
+        //private DetectedEmotions Emotions = new DetectedEmotions();
+        /// <summary>
+        /// The history of emotions.
+        /// 
+        /// The Key is the number of the face.
+        /// 
+        /// The value is a list of detected emotions fot this face.
+        /// </summary>
+        private Dictionary<Int32, List<DetectedEmotions>> EmotionsHistory = new Dictionary<Int32, List<DetectedEmotions>>();
 
         /// <summary>
         /// Options for controlling the operation.
@@ -241,6 +280,36 @@ namespace AssetPackage
 
         #endregion Properties
 
+        #region Indexers
+
+        public List<DetectedEmotions> this[Int32 face]
+        {
+            get
+            {
+                if (EmotionsHistory.ContainsKey(face))
+                {
+                    return EmotionsHistory[face];
+                }
+
+                return null;
+            }
+        }
+
+        public Double this[Int32 face, String emotion]
+        {
+            get
+            {
+                if (EmotionsHistory.ContainsKey(face) && EmotionsHistory[face].Count != 0)
+                {
+                    return EmotionsHistory[face].Select(p => p[emotion]).Average();
+                }
+
+                return 0;
+            }
+        }
+
+        #endregion Indexers
+
         #region Methods
 
         /// <summary>
@@ -248,10 +317,12 @@ namespace AssetPackage
         /// </summary>
         public Boolean DetectEmotionsInLandmarks()
         {
-            Emotions.Clear();
+            Int32 ndx = 0;
 
-            foreach (KeyValuePair<RECT, List<POINT>> kvp in Faces)
+            foreach (DetectedFace kvp in Faces)
             {
+                DetectedEmotions Emotions = new DetectedEmotions();
+
                 List<Double> EuclideanDistances = new List<Double>();
                 List<Double> Cosines = new List<Double>();
                 List<Double> ArcCosines = new List<Double>();
@@ -298,21 +369,32 @@ namespace AssetPackage
 
                         //! Normal Fuzzy Or is just take the max of the operands.
                         //! We multiply the part first with the Certainty Factor (CF).
-                        // 
+                        //
 
                         orresult += expression.CF * andresult; //! Classic Fuzzy Logic: orresult = Math.Max(orresult, expression.CF * andresult);
                     }
 
-                    if (!Emotions.ContainsKey(emotion.Key))
-                    {
-                        Emotions.Add(emotion.Key, new List<Double>());
-                    }
-
-                    Emotions[emotion.Key].Add(orresult);
+                    Emotions[emotion.Key] = orresult;
                 }
+
+                //! Build some history so we can average.
+                //
+                if (!EmotionsHistory.ContainsKey(ndx))
+                {
+                    EmotionsHistory.Add(ndx, new List<DetectedEmotions>());
+                }
+
+                EmotionsHistory[ndx].Add(Emotions);
+
+                if (EmotionsHistory[ndx].Count > (settings as EmotionDetectionAssetSettings).Average)
+                {
+                    EmotionsHistory[ndx].RemoveAt(0);
+                }
+
+                ndx++;
             }
 
-            return Emotions.Count != 0;
+            return ndx != 0;
         }
 
         /// <summary>
@@ -322,36 +404,37 @@ namespace AssetPackage
         /// <param name="database"> The database. </param>
         public void Initialize(String database)
         {
-            InitDetector();
+            DlibWrapper.InitDetector();
 
-            //! Twice or we do not see any faces detected. Reason not known, need to debug this.
-            InitDatabase(database);
-            InitDatabase(database);
+            //! Init twice or we do not see any faces detected. Reason not known, need to debug this.
+            //
+            DlibWrapper.InitDatabase(database);
+            DlibWrapper.InitDatabase(database);
         }
 
         /// <summary>
         /// Parse a FURIA Fuzzy Rule.
         /// </summary>
         ///
-        /// <param name="expr"> The expression. </param>
+        /// <param name="rule"> The expression. </param>
         ///
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        public Boolean ParseRule(String expr)
+        public Boolean ParseRule(String rule)
         {
-            if (!String.IsNullOrEmpty(expr.Trim()))
+            if (!String.IsNullOrEmpty(rule.Trim()))
             {
                 FuzzyExpression expression = new FuzzyExpression();
 
-                String[] fsplit = expr
+                String[] fsplit = rule
                     .Split(new string[] { "=>" }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(p => p.Trim())
                     .ToArray();
 
                 if (fsplit.Length == 2)
                 {
-                    String rule = fsplit[0];
+                    String logic = fsplit[0];
                     String score = fsplit[1];
 
                     if (rg2.IsMatch(score))
@@ -366,7 +449,7 @@ namespace AssetPackage
                         }
                     }
 
-                    String[] parts = rule
+                    String[] parts = logic
                         .Split(new string[] { "and" }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(p => p.Trim())
                         .ToArray();
@@ -434,6 +517,8 @@ namespace AssetPackage
                 }
             }
 
+            Emotions = expressions.Select(p => p.Emotion).Distinct().ToList();
+
             return true;
         }
 
@@ -491,65 +576,6 @@ namespace AssetPackage
         {
             return DetectEmotionsInLandmarks();
         }
-
-        /// <summary>
-        /// Detect faces.
-        /// </summary>
-        ///
-        /// <param name="img">          The image. </param>
-        /// <param name="length">       The length. </param>
-        /// <param name="faces">        [out] The faces. </param>
-        /// <param name="facecount">    [out] The facecount. </param>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "DetectFaces",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern void DetectFaces(
-            [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
-            Int32 length,
-            out IntPtr faces,
-            out int facecount);
-
-        /// <summary>
-        /// Detect landmarks.
-        /// </summary>
-        ///
-        /// <param name="face">         The face. </param>
-        /// <param name="landmarks">    [out] The landmarks. </param>
-        /// <param name="markcount">    [out] The markcount. </param>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "DetectLandmarks",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern void DetectLandmarks(RECT face, out IntPtr landmarks, out int markcount);
-
-        /// <summary>
-        /// Init database.
-        /// </summary>
-        ///
-        /// <param name="lpFileName">   Filename of the file. </param>
-        ///
-        /// <returns>
-        /// An int.
-        /// </returns>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "InitDatabase",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern int InitDatabase([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
-
-        /// <summary>
-        /// Init detector.
-        /// </summary>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "InitDetector",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern void InitDetector();
 
         /// <summary>
         /// Parse number.
@@ -651,7 +677,7 @@ namespace AssetPackage
             int facecount = 0;
             IntPtr faces = IntPtr.Zero;
 
-            DetectFaces(raw, raw.Length, out faces, out facecount);
+            DlibWrapper.DetectFaces(raw, raw.Length, out faces, out facecount);
 
             Faces.Clear();
 
@@ -682,7 +708,7 @@ namespace AssetPackage
                 int markcount = 0;
                 IntPtr landmarks = IntPtr.Zero;
 
-                DetectLandmarks(kvp.Key, out landmarks, out markcount);
+                DlibWrapper.DetectLandmarks(kvp.Key, out landmarks, out markcount);
 
                 kvp.Value.Clear();
 
@@ -725,7 +751,7 @@ namespace AssetPackage
         #region Nested Types
 
         /// <summary>
-        /// A point.
+        /// A point (to bridge the gap between C++ and C#).
         /// 
         /// <see cref="http://www.pinvoke.net/default.aspx/Structures/RECT.html"/>
         /// </summary>
@@ -777,7 +803,7 @@ namespace AssetPackage
         }
 
         /// <summary>
-        /// A rectangle.
+        /// A rectangle (to bridge the gap between C++ and C#).
         /// 
         /// <see cref="http://www.pinvoke.net/default.aspx/Structures/RECT.html"/>
         /// </summary>
@@ -982,6 +1008,72 @@ namespace AssetPackage
                     Double.IsPositiveInfinity(rsb) ? "+inf" : rsb.ToString()
                     );
             }
+
+            #endregion Methods
+        }
+
+        protected static class DlibWrapper
+        {
+            #region Methods
+
+            /// <summary>
+            /// Detect faces.
+            /// </summary>
+            ///
+            /// <param name="img">          The image. </param>
+            /// <param name="length">       The length. </param>
+            /// <param name="faces">        [out] The faces. </param>
+            /// <param name="facecount">    [out] The facecount. </param>
+            [DllImport(wrapper,
+                CharSet = CharSet.Auto,
+                EntryPoint = "DetectFaces",
+                SetLastError = true,
+                CallingConvention = CallingConvention.Cdecl)]
+            internal static extern void DetectFaces(
+                [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
+                Int32 length,
+                out IntPtr faces,
+                out int facecount);
+
+            /// <summary>
+            /// Detect landmarks.
+            /// </summary>
+            ///
+            /// <param name="face">         The face. </param>
+            /// <param name="landmarks">    [out] The landmarks. </param>
+            /// <param name="markcount">    [out] The markcount. </param>
+            [DllImport(wrapper,
+                CharSet = CharSet.Auto,
+                EntryPoint = "DetectLandmarks",
+                SetLastError = true,
+                CallingConvention = CallingConvention.Cdecl)]
+            internal static extern void DetectLandmarks(RECT face, out IntPtr landmarks, out int markcount);
+
+            /// <summary>
+            /// Init database.
+            /// </summary>
+            ///
+            /// <param name="lpFileName">   Filename of the file. </param>
+            ///
+            /// <returns>
+            /// An int.
+            /// </returns>
+            [DllImport(wrapper,
+                CharSet = CharSet.Auto,
+                EntryPoint = "InitDatabase",
+                SetLastError = true,
+                CallingConvention = CallingConvention.Cdecl)]
+            internal static extern int InitDatabase([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+
+            /// <summary>
+            /// Init detector.
+            /// </summary>
+            [DllImport(wrapper,
+                CharSet = CharSet.Auto,
+                EntryPoint = "InitDetector",
+                SetLastError = true,
+                CallingConvention = CallingConvention.Cdecl)]
+            internal static extern void InitDetector();
 
             #endregion Methods
         }

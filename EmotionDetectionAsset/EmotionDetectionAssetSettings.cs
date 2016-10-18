@@ -22,6 +22,7 @@ namespace AssetPackage
             Database = @"shape_predictor_68_face_landmarks.dat";
             Rules = @"FURIA Fuzzy Logic Rules.txt";
             GrayScale = false;
+            Average = 5;
         }
 
         #endregion Constructors
@@ -69,6 +70,26 @@ namespace AssetPackage
         [Category("Config")]
         [DefaultValue(false)]
         public Boolean GrayScale
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the number of detections to average.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// The minumum value is 1.
+        /// </remarks>
+        ///
+        /// <value>
+        /// The number of emotions to average.
+        /// </value>
+        [Description("The number of detections to average. The minumum value is 1.")]
+        [Category("Config")]
+        [DefaultValue(5)]
+        public Int32 Average
         {
             get;
             set;
