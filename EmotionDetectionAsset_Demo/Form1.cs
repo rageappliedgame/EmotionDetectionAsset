@@ -228,11 +228,13 @@ namespace dlib_csharp
             foreach (String emotion in eda.Emotions)
             {
                 chart1.Series.Add(emotion).ChartType = SeriesChartType.FastLine;
+            }
 
-                //for (Int32 i = 0; i < 100; i++)
-                //{
-                //    chart1.Series[emotion].Points.AddY(0.1);
-                //}
+            chart2.Series.Clear();
+
+            foreach (String emotion in eda.Emotions)
+            {
+                chart2.Series.Add(emotion).Points.AddY(0.5);
             }
         }
 
@@ -522,6 +524,10 @@ namespace dlib_csharp
             {
                 chart1.Series[emotion].Points.AddY(eda[0, emotion]);
 
+                DataPoint dp = chart2.Series[emotion].Points[0];
+                dp.YValues[0] = eda[0, emotion];
+                chart2.Series[emotion].Points[0] = dp;
+
                 chart1.ChartAreas[0].AxisY.Maximum = Double.NaN;
 
                 if (chart1.Series[emotion].Points.Count > 100)
@@ -529,6 +535,8 @@ namespace dlib_csharp
                     chart1.Series[emotion].Points.RemoveAt(0);
                 }
             }
+
+            chart2.Update();
         }
 
         /// <summary>
