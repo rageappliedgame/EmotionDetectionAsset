@@ -319,14 +319,19 @@ namespace AssetPackage
         {
             get
             {
-                if (EmotionsHistory.ContainsKey(face) && EmotionsHistory[face].Count > (settings.SuppressSpikes ? 3 : 0))
+                //! Check if there are enough points to average.
+                // 
+                if (EmotionsHistory.ContainsKey(face) && EmotionsHistory[face].Count > (settings.SuppressSpikes ? 2 : 0))
                 {
                     if (settings.SuppressSpikes)
                     {
-                        return EmotionsHistory[face].Select(p => p[emotion]).Take(EmotionsHistory[face].Count - 3).Average();
+                        //! When Suppressing Spikes, ignore the last two entries as they are used for filtering and not stable yet.
+                        // 
+                        return EmotionsHistory[face].Select(p => p[emotion]).Take(EmotionsHistory[face].Count - 2).Average();
                     }
                     else
                     {
+                        Log(Severity.Verbose, "Avg Count: {0}", EmotionsHistory[face].Select(p => p[emotion]).Count());
                         return EmotionsHistory[face].Select(p => p[emotion]).Average();
                     }
                 }
