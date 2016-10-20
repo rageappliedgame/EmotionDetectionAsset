@@ -13,6 +13,7 @@ namespace AssetPackage
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
+    using AssetManagerPackage;
 
     //! TODO Dynamically Load DLL (now it should be on the path).
     //! TODO Add scaling factor.
@@ -69,7 +70,7 @@ namespace AssetPackage
         /// <remarks>
         /// Each expression is a single line from the FURIA output.
         /// </remarks>
-        public FuzzyExpressions expressions = new FuzzyExpressions();
+        private FuzzyExpressions Expressions = new FuzzyExpressions();
 
         /// <summary>
         /// The detected faces and their landmarks.
@@ -321,7 +322,7 @@ namespace AssetPackage
 
             foreach (DetectedFace kvp in Faces)
             {
-                DetectedEmotions Emotions = new DetectedEmotions();
+                DetectedEmotions DetectedEmotions = new DetectedEmotions();
 
                 List<Double> EuclideanDistances = new List<Double>();
                 List<Double> Cosines = new List<Double>();
@@ -352,7 +353,7 @@ namespace AssetPackage
 
                 //! Evaluate FURIA Fuzzy Rules with ArCosines as Input.
                 //
-                foreach (IGrouping<String, FuzzyExpression> emotion in expressions.GroupBy(p => p.Emotion))
+                foreach (IGrouping<String, FuzzyExpression> emotion in Expressions.GroupBy(p => p.Emotion))
                 {
                     Double orresult = 0;    //! Classic Fuzzy Logic: Double.MinValue;
 
@@ -374,7 +375,7 @@ namespace AssetPackage
                         orresult += expression.CF * andresult; //! Classic Fuzzy Logic: orresult = Math.Max(orresult, expression.CF * andresult);
                     }
 
-                    Emotions[emotion.Key] = orresult;
+                    DetectedEmotions[emotion.Key] = orresult;
                 }
 
                 //! Build some history so we can average.
@@ -384,11 +385,22 @@ namespace AssetPackage
                     EmotionsHistory.Add(ndx, new List<DetectedEmotions>());
                 }
 
-                EmotionsHistory[ndx].Add(Emotions);
+                EmotionsHistory[ndx].Add(DetectedEmotions);
 
                 if (EmotionsHistory[ndx].Count > (settings as EmotionDetectionAssetSettings).Average)
                 {
                     EmotionsHistory[ndx].RemoveAt(0);
+                }
+
+                //! Broadcast Emotions.
+                // 
+                foreach (String emotion in Emotions)
+                {
+                    Messages.broadcast(emotion, new EmotionEventArgs()
+                    {
+                        face = ndx,
+                        value = this[ndx, emotion]
+                    });
                 }
 
                 ndx++;
@@ -495,7 +507,7 @@ namespace AssetPackage
                     return false;
                 }
 
-                expressions.Add(expression);
+                Expressions.Add(expression);
 
                 return true;
             }
@@ -505,7 +517,8 @@ namespace AssetPackage
 
         public Boolean ParseRules(String[] rules)
         {
-            expressions.Clear();
+            Expressions.Clear();
+            Emotions.Clear();
 
             foreach (String rule in rules)
             {
@@ -517,7 +530,15 @@ namespace AssetPackage
                 }
             }
 
-            Emotions = expressions.Select(p => p.Emotion).Distinct().ToList();
+            Emotions = Expressions.Select(p => p.Emotion).Distinct().ToList();
+
+            foreach (String emotion in Emotions)
+            {
+                if (!Messages.define(emotion))
+                {
+                    Log(Severity.Warning, "Error defining {0} message", emotion);
+                }
+            }
 
             return true;
         }
@@ -1076,6 +1097,12 @@ namespace AssetPackage
             internal static extern void InitDetector();
 
             #endregion Methods
+        }
+
+        public class EmotionEventArgs
+        {
+            public Int32 face;
+            public Double value;
         }
 
         #endregion Nested Types

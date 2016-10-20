@@ -10,20 +10,29 @@ namespace dlib_csharp
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Windows.Forms;
-    using AssetManagerPackage;
-    using AssetPackage;
-    using Accord.Video.FFMPEG;
     using System.Windows.Forms.DataVisualization.Charting;
+
+    using Accord.Video;
+    using Accord.Video.DirectShow;
+    using Accord.Video.FFMPEG;
+
+    using AssetManagerPackage;
+
+    using AssetPackage;
 
     public partial class Form1 : Form
     {
         #region Fields
 
-        const String databse = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\EmotionDetectionAsset\EmotionDetectionAsset_Test\bin\Debug\shape_predictor_68_face_landmarks.dat";
+        const String database = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\EmotionDetectionAsset\EmotionDetectionAsset_Test\bin\Debug\shape_predictor_68_face_landmarks.dat";
         const String face1 = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\dlib-csharp\franck_02159.bmp";
         const String face2 = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\dlib-csharp\franck_02159m.bmp";
         const String wrapper = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\build\Release\dlibwrapper.dll";
 
+        Boolean busy = false;
+        Int32 counter = 0;
+        EmotionDetectionAsset eda = new EmotionDetectionAsset();
+        Boolean facedetected = false;
         List<RECT> Faces = new List<RECT>();
         List<POINT> Landmarks = new List<POINT>();
 
@@ -38,6 +47,7 @@ namespace dlib_csharp
             PixelFormat.Format24bppRgb
         };
         Stopwatch sw = new Stopwatch();
+        private VideoCaptureDevice videoSource;
 
         #endregion Fields
 
@@ -112,6 +122,75 @@ namespace dlib_csharp
         public static extern void InitDetector();
 
         /// <summary>
+        /// Draw faces and landmarks.
+        /// </summary>
+        public void DrawFacesAndLandmarks(Image img)
+        {
+            using (Graphics g = Graphics.FromImage(img))
+            {
+                Int32 cnt = 0;
+
+                foreach (KeyValuePair<EmotionDetectionAsset.RECT, List<EmotionDetectionAsset.POINT>> kvp in eda.Faces)
+                {
+                    //! Faces
+                    //
+                    g.DrawRectangle(
+                        new Pen(new SolidBrush(Color.Black)),
+                        new Rectangle(kvp.Key.Left, kvp.Key.Top, kvp.Key.Right - kvp.Key.Left, kvp.Key.Bottom - kvp.Key.Top));
+
+                    //! Face Id
+                    // .
+                    g.DrawString(
+                        String.Format("face: {0}", cnt++),
+                        new Font(FontFamily.GenericSansSerif, 10.0f, FontStyle.Bold),
+                        new SolidBrush(Color.Yellow),
+                        new PointF(kvp.Key.Left, kvp.Key.Top));
+
+                    //! Angles.
+                    //
+                    foreach (EmotionDetectionAsset.POINT vector in eda.Vectors)
+                    {
+                        g.DrawLine(new Pen(
+                            new SolidBrush(Color.Blue)),
+                            kvp.Value[vector.X].X, kvp.Value[vector.X].Y,
+                            kvp.Value[vector.Y].X, kvp.Value[vector.Y].Y);
+                    }
+
+                    //! Landmarks.
+                    //
+                    foreach (EmotionDetectionAsset.POINT p in kvp.Value)
+                    {
+                        g.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
+                    }
+                }
+            }
+
+            this.Refresh();
+        }
+
+        /// <summary>
+        /// Arguments to String.
+        /// </summary>
+        ///
+        /// <param name="args"> A variable-length parameters list containing
+        ///                     arguments. </param>
+        ///
+        /// <returns>
+        /// A String.
+        /// </returns>
+        private static String ArgsToString(params object[] args)
+        {
+            if (args == null || args.Length == 0)
+            {
+                return String.Empty;
+            }
+            else
+            {
+                return String.Join(";", args.Select(p => p.ToString()).ToArray());
+            }
+        }
+
+        /// <summary>
         /// Event handler. Called by button1 for click events.
         /// </summary>
         ///
@@ -125,9 +204,9 @@ namespace dlib_csharp
             {
                 InitDetector();
 
-                InitDatabase(databse);
+                InitDatabase(database);
 
-                InitDatabase(databse);
+                InitDatabase(database);
 
                 label1.Text = t.ElapsedMsg;
             }
@@ -142,6 +221,7 @@ namespace dlib_csharp
         ///
         /// <param name="sender">   Source of the event. </param>
         /// <param name="e">        Event information. </param>
+        [Obsolete]
         private void button2_Click(object sender, EventArgs e)
         {
             Bitmap bmp = (Bitmap)Bitmap.FromFile(face2);
@@ -157,90 +237,38 @@ namespace dlib_csharp
         ///
         /// <param name="sender">   Source of the event. </param>
         /// <param name="e">        Event information. </param>
+        [Obsolete]
         private void button3_Click(object sender, EventArgs e)
         {
             DetectLandmarksInFaces();
         }
 
         /// <summary>
-        /// (This method is obsolete) detect landmarks in faces.
+        /// Event handler. Called by button4 for click events.
         /// </summary>
-        [Obsolete()]
-        private void DetectLandmarksInFaces()
-        {
-            foreach (RECT r in Faces)
-            {
-                using (Timing t = new Timing("DetectFaces"))
-                {
-                    int markcount = 0;
-                    IntPtr landmarks = IntPtr.Zero;
-
-                    DetectLandmarks(r, out landmarks, out markcount);
-
-                    //Debug.Print("Detected: {0} Landmark Part(s)", markcount);
-                    //Debug.Print("SizeOf(POINT)={0}", Marshal.SizeOf(new POINT()));
-
-                    Landmarks.Clear();
-
-                    //POINT[] ManagedPointArray = new POINT[markcount];
-
-                    IntPtr[] pIntPtrArray = new IntPtr[markcount];
-
-                    Marshal.Copy(landmarks, pIntPtrArray, 0, markcount);
-
-                    for (Int32 i = 0; i < markcount; i++)
-                    {
-                        Landmarks.Add((POINT)Marshal.PtrToStructure(pIntPtrArray[i], typeof(POINT)));
-
-                        Marshal.FreeCoTaskMem(pIntPtrArray[i]);
-
-                        // Debug.Print("Landmark Point {0} @ {1}", i, Landmarks[i].ToString());
-                    }
-
-                    Marshal.FreeCoTaskMem(landmarks);
-
-                    label1.Text = t.ElapsedMsg;
-                }
-
-                using (Graphics g1 = Graphics.FromImage(pictureBox1.Image))
-                {
-                    foreach (Point p in Landmarks)
-                    {
-                        g1.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
-                    }
-                }
-            }
-
-            this.Refresh();
-        }
-
-        EmotionDetectionAsset eda = new EmotionDetectionAsset();
-
-        /// <summary>
-        /// Init chart.
-        /// </summary>
-        private void InitChart()
-        {
-            chart1.Series.Clear();
-
-            chart1.ChartAreas[0].AxisX.Maximum = 100;
-
-            foreach (String emotion in eda.Emotions)
-            {
-                chart1.Series.Add(emotion).ChartType = SeriesChartType.FastLine;
-            }
-
-            chart2.Series.Clear();
-
-            foreach (String emotion in eda.Emotions)
-            {
-                chart2.Series.Add(emotion).Points.AddY(0.5);
-            }
-        }
-
+        ///
+        /// <param name="sender">   Source of the event. </param>
+        /// <param name="e">        Event information. </param>
         private void button4_Click(object sender, EventArgs e)
         {
             InitChart();
+
+            //! VideoCaptureDevice fails with a Additional information: Object is currently in use elsewhere. GDI+ error.
+            //
+            //! Enumerate video devices
+            //
+            //FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+            //// Create video source
+            //videoSource = new VideoCaptureDevice(videoDevices[0].MonikerString);
+
+            ////videoSource.DesiredFrameRate = 5;
+
+            //// Set NewFrame event handler
+            //videoSource.NewFrame += new NewFrameEventHandler(video_NewFrame);
+
+            //// start the video source
+            //videoSource.Start();
 
             // change the capture time frame
             this.webCamCapture1.TimeToCapture_milliseconds = 20;
@@ -250,11 +278,58 @@ namespace dlib_csharp
             this.webCamCapture1.Start(0);
         }
 
+        /// <summary>
+        /// Event handler. Called by button5 for click events.
+        /// </summary>
+        ///
+        /// <param name="sender">   Source of the event. </param>
+        /// <param name="e">        Event information. </param>
         private void button5_Click(object sender, EventArgs e)
         {
+            InitChart();
+
             pictureBox1.Image = Image.FromFile("Kiavash1.jpg");
 
             ProcessImageIntoEmotions(pictureBox1.Image, true);
+        }
+
+        /// <summary>
+        /// Event handler. Called by button6 for click events.
+        /// </summary>
+        ///
+        /// <param name="sender">   Source of the event. </param>
+        /// <param name="e">        Event information. </param>
+        private void button6_Click(object sender, EventArgs e)
+        {
+            InitChart();
+
+            //! Create instance of video reader
+            VideoFileReader reader = new VideoFileReader();
+
+            //! Open video file
+            reader.Open(@"C:\Virtual Machines\X-HRL-A10430\Videos\Wiskunde Academie\Bewijzen - Waarom gaan de zwaartelijnen door 1 punt, het zwaartepunt_ - WiskundeAcademie.mp4");
+
+            Image img;
+
+            // Read 100 video frames out of it
+            for (Int32 i = 0; i < reader.FrameCount; i++)
+            {
+                img = reader.ReadVideoFrame();
+
+                if (img != null)
+                {
+                    pictureBox1.Image = img;
+
+                    //pictureBox1.Refresh();
+
+                    ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
+
+                    //! Dispose the frame when it is no longer required
+                    img.Dispose();
+                }
+            }
+
+            reader.Close();
         }
 
         /// <summary>
@@ -262,6 +337,7 @@ namespace dlib_csharp
         /// </summary>
         ///
         /// <param name="bmp">  The bitmap. </param>
+        [Obsolete]
         private void DetectFacesInBitmap(Bitmap bmp)
         {
             Debug.Print("{0}", pictureBox1.Image.PixelFormat);
@@ -272,9 +348,9 @@ namespace dlib_csharp
             //    gr.DrawImage(pictureBox1.Image, new Rectangle(0, 0, clone.Width, clone.Height));
             //}
 
-            //! This is code to make sure dlib accepts the image. 
+            //! This is code to make sure dlib accepts the image.
             //! Dlib's image_load.h / load_bmp() only supports 1,4,8 or 24 bits images (so no 16 or 32 bit ones).
-            // 
+            //
             Byte[] raw = (!supported.Contains(bmp.PixelFormat)) ?
                 bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format24bppRgb).ToByteArray() :
                 bmp.ToByteArray();
@@ -328,10 +404,115 @@ namespace dlib_csharp
             this.Refresh();
         }
 
+        /// <summary>
+        /// (This method is obsolete) detect landmarks in faces.
+        /// </summary>
+        [Obsolete]
+        private void DetectLandmarksInFaces()
+        {
+            foreach (RECT r in Faces)
+            {
+                using (Timing t = new Timing("DetectFaces"))
+                {
+                    int markcount = 0;
+                    IntPtr landmarks = IntPtr.Zero;
+
+                    DetectLandmarks(r, out landmarks, out markcount);
+
+                    //Debug.Print("Detected: {0} Landmark Part(s)", markcount);
+                    //Debug.Print("SizeOf(POINT)={0}", Marshal.SizeOf(new POINT()));
+
+                    Landmarks.Clear();
+
+                    //POINT[] ManagedPointArray = new POINT[markcount];
+
+                    IntPtr[] pIntPtrArray = new IntPtr[markcount];
+
+                    Marshal.Copy(landmarks, pIntPtrArray, 0, markcount);
+
+                    for (Int32 i = 0; i < markcount; i++)
+                    {
+                        Landmarks.Add((POINT)Marshal.PtrToStructure(pIntPtrArray[i], typeof(POINT)));
+
+                        Marshal.FreeCoTaskMem(pIntPtrArray[i]);
+
+                        // Debug.Print("Landmark Point {0} @ {1}", i, Landmarks[i].ToString());
+                    }
+
+                    Marshal.FreeCoTaskMem(landmarks);
+
+                    label1.Text = t.ElapsedMsg;
+                }
+
+                using (Graphics g1 = Graphics.FromImage(pictureBox1.Image))
+                {
+                    foreach (Point p in Landmarks)
+                    {
+                        g1.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
+                    }
+                }
+            }
+
+            this.Refresh();
+        }
+
+        /// <summary>
+        /// Handler, called when the emotion update event.
+        /// </summary>
+        ///
+        /// <param name="message">      The message. </param>
+        /// <param name="parameters">   A variable-length parameters list containing parameters. </param>
+        private void EmotionUpdateEventHandler(String message, params object[] parameters)
+        {
+            //! Check parameters.
+            //
+            if (parameters.Length == 1 && parameters[0] is EmotionDetectionAsset.EmotionEventArgs)
+            {
+                //! Make the call thread-safe (ie. run on UI Thread).
+                //
+                Invoke(new MethodInvoker(delegate
+                {
+                    EmotionUpdateEventHandler(message, parameters[0] as EmotionDetectionAsset.EmotionEventArgs);
+                }
+                ));
+            }
+        }
+
+        /// <summary>
+        /// Handler, called when the emotion update event.
+        /// </summary>
+        ///
+        /// <param name="message">  The message. </param>
+        /// <param name="e">        Emotion event information. </param>
+        private void EmotionUpdateEventHandler(String message, EmotionDetectionAsset.EmotionEventArgs e)
+        {
+            Console.WriteLine("EmotionUpdateEventHandler({0}: [{1}->{2:0.00}])", message.PadRight(16), e.face, e.value);
+
+            if (e.face == 0)
+            {
+                //! The following code fails to update the chart (it does not notice the changes).
+                //
+                // chart2.Series[message].Points[0].YValues[0] = e.value;
+
+                //! So replace the DataPoint.
+                DataPoint dp = chart2.Series[message].Points[0];
+                dp.YValues[0] = e.value;
+                chart2.Series[message].Points[0] = dp;
+            }
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // stop the video capture
-            this.webCamCapture1.Stop();
+            if (this.webCamCapture1 != null)
+            {
+                this.webCamCapture1.Stop();
+            }
+
+            if (videoSource != null && videoSource.IsRunning)
+            {
+                videoSource.Stop();
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -346,74 +527,40 @@ namespace dlib_csharp
 
             eda.ParseRules(File.ReadAllLines(@".\FURIA Fuzzy Logic Rules.txt"));
 
+            foreach (String emotion in eda.Emotions)
+            {
+                Messages.subscribe(emotion, EmotionUpdateEventHandler);
+            }
+
             //listView1.SetDoubleBuffered(true);
         }
 
         /// <summary>
-        /// Draw faces and landmarks.
+        /// Init chart.
         /// </summary>
-        public void DrawFacesAndLandmarks(Image img)
+        private void InitChart()
         {
-            using (Graphics g = Graphics.FromImage(img))
+            chart1.Series.Clear();
+
+            chart1.ChartAreas[0].AxisX.Maximum = 100;
+
+            foreach (String emotion in eda.Emotions)
             {
-                Int32 cnt = 0;
-
-                foreach (KeyValuePair<EmotionDetectionAsset.RECT, List<EmotionDetectionAsset.POINT>> kvp in eda.Faces)
-                {
-                    //! Faces
-                    // 
-                    g.DrawRectangle(
-                        new Pen(new SolidBrush(Color.Black)),
-                        new Rectangle(kvp.Key.Left, kvp.Key.Top, kvp.Key.Right - kvp.Key.Left, kvp.Key.Bottom - kvp.Key.Top));
-
-                    //! Face Id
-                    // .
-                    g.DrawString(
-                        String.Format("face: {0}", cnt++),
-                        new Font(FontFamily.GenericSansSerif, 10.0f, FontStyle.Bold),
-                        new SolidBrush(Color.Yellow),
-                        new PointF(kvp.Key.Left, kvp.Key.Top));
-
-                    //! Angles.
-                    // 
-                    foreach (EmotionDetectionAsset.POINT vector in eda.Vectors)
-                    {
-                        g.DrawLine(new Pen(
-                            new SolidBrush(Color.Blue)),
-                            kvp.Value[vector.X].X, kvp.Value[vector.X].Y,
-                            kvp.Value[vector.Y].X, kvp.Value[vector.Y].Y);
-                    }
-
-                    //! Landmarks.
-                    // 
-                    foreach (EmotionDetectionAsset.POINT p in kvp.Value)
-                    {
-                        g.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
-                    }
-                }
+                chart1.Series.Add(emotion).ChartType = SeriesChartType.FastLine;
             }
 
-            this.Refresh();
+            chart2.Series.Clear();
+
+            foreach (String emotion in eda.Emotions)
+            {
+                chart2.Series.Add(emotion).Points.AddY(0.5);
+            }
         }
-
-        Int32 counter = 0;
-
-        private void webCamCapture1_ImageCaptured(object source, WebCam_Capture.WebcamEventArgs e)
-        {
-            this.pictureBox1.Image = e.WebCamImage;
-
-            ProcessImageIntoEmotions(this.pictureBox1.Image, true);
-
-            //this.webCamCapture1.Stop();
-        }
-
-        Boolean facedetected = false;
-
 
         private void ProcessImageIntoEmotions(Image img, Boolean redetect)
         {
             //! Skipping does not seem to work properly
-            // 
+            //
             if (redetect)
             {
                 facedetected = eda.ProcessImage(img);
@@ -425,11 +572,11 @@ namespace dlib_csharp
                     //Debug.WriteLine(String.Format("{0} Face(s detected.", eda.Faces.Count));
 
                     //! Process detect faces.
-                    // 
+                    //
                     if (eda.ProcessFaces())
                     {
                         //! Show Detection Results.
-                        // 
+                        //
                         DrawFacesAndLandmarks(img);
 
                         UpdateOutputTable();
@@ -440,7 +587,33 @@ namespace dlib_csharp
             }
         }
 
-        //Dictionary<String, List<Double>> History = new Dictionary<String, List<Double>>();
+        /// <summary>
+        /// Updates the chart.
+        /// </summary>
+        private void UpdateChart()
+        {
+            //! Plot averaged data...
+            //
+            foreach (String emotion in eda.Emotions)
+            {
+                chart1.Series[emotion].Points.AddY(eda[0, emotion]);
+
+                //! Moved to Message Event Handler.
+                // 
+                //DataPoint dp = chart2.Series[emotion].Points[0];
+                //dp.YValues[0] = eda[0, emotion];
+                //chart2.Series[emotion].Points[0] = dp;
+
+                chart1.ChartAreas[0].AxisY.Maximum = Double.NaN;
+
+                if (chart1.Series[emotion].Points.Count > 100)
+                {
+                    chart1.Series[emotion].Points.RemoveAt(0);
+                }
+            }
+
+            chart2.Update();
+        }
 
         /// <summary>
         /// Updates the output table.
@@ -451,12 +624,10 @@ namespace dlib_csharp
             {
                 if (eda.ProcessLandmarks())
                 {
-                    Boolean first = true;
-
                     foreach (KeyValuePair<EmotionDetectionAsset.RECT, List<EmotionDetectionAsset.POINT>> kvp in eda.Faces)
                     {
                         //! Process detected landmarks into emotions.
-                        // 
+                        //
 
                         while (listView1.Columns.Count - 1 > eda.Faces.Count)
                         {
@@ -483,7 +654,7 @@ namespace dlib_csharp
                     }
 
                     //! Show Result for First Detected Face.
-                    // 
+                    //
                     Int32 ndx = 0;
 
                     foreach (String emotion in eda.Emotions)
@@ -514,66 +685,32 @@ namespace dlib_csharp
         }
 
         /// <summary>
-        /// Updates the chart.
-        /// </summary>
-        private void UpdateChart()
-        {
-            //! Plot averaged data...
-            // 
-            foreach (String emotion in eda.Emotions)
-            {
-                chart1.Series[emotion].Points.AddY(eda[0, emotion]);
-
-                DataPoint dp = chart2.Series[emotion].Points[0];
-                dp.YValues[0] = eda[0, emotion];
-                chart2.Series[emotion].Points[0] = dp;
-
-                chart1.ChartAreas[0].AxisY.Maximum = Double.NaN;
-
-                if (chart1.Series[emotion].Points.Count > 100)
-                {
-                    chart1.Series[emotion].Points.RemoveAt(0);
-                }
-            }
-
-            chart2.Update();
-        }
-
-        /// <summary>
-        /// Event handler. Called by button6 for click events.
+        /// Event handler. Called by video for new frame events.
         /// </summary>
         ///
         /// <param name="sender">   Source of the event. </param>
-        /// <param name="e">        Event information. </param>
-        private void button6_Click(object sender, EventArgs e)
+        /// <param name="e">        New frame event information. </param>
+        private void video_NewFrame(object sender, NewFrameEventArgs e)
         {
-            //! Create instance of video reader
-            VideoFileReader reader = new VideoFileReader();
-
-            //! Open video file
-            reader.Open(@"C:\Virtual Machines\X-HRL-A10430\Videos\Wiskunde Academie\Bewijzen - Waarom gaan de zwaartelijnen door 1 punt, het zwaartepunt_ - WiskundeAcademie.mp4");
-
-            Image img;
-
-            // Read 100 video frames out of it
-            for (Int32 i = 0; i < reader.FrameCount; i++)
+            if (!busy)
             {
-                img = reader.ReadVideoFrame();
+                busy = true;
 
-                if (img != null)
-                {
-                    pictureBox1.Image = img;
+                this.pictureBox1.Image = (Bitmap)e.Frame.Clone();
 
-                    //pictureBox1.Refresh();
-
-                    ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
-
-                    //! Dispose the frame when it is no longer required
-                    img.Dispose();
-                }
+                //ProcessImageIntoEmotions(this.pictureBox1.Image, true);
             }
 
-            reader.Close();
+            busy = false;
+        }
+
+        private void webCamCapture1_ImageCaptured(object source, WebCam_Capture.WebcamEventArgs e)
+        {
+            this.pictureBox1.Image = e.WebCamImage;
+
+            ProcessImageIntoEmotions(this.pictureBox1.Image, true);
+
+            //this.webCamCapture1.Stop();
         }
 
         #endregion Methods
@@ -940,6 +1077,5 @@ namespace dlib_csharp
         }
 
         #endregion Nested Types
-
     }
 }

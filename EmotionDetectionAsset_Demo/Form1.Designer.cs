@@ -64,6 +64,7 @@
             // 
             // button2
             // 
+            this.button2.Enabled = false;
             this.button2.Location = new System.Drawing.Point(810, 941);
             this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
@@ -85,6 +86,7 @@
             // 
             // button3
             // 
+            this.button3.Enabled = false;
             this.button3.Location = new System.Drawing.Point(620, 942);
             this.button3.Margin = new System.Windows.Forms.Padding(4);
             this.button3.Name = "button3";
