@@ -498,6 +498,10 @@ namespace dlib_csharp
                 DataPoint dp = chart2.Series[message].Points[0];
                 dp.YValues[0] = e.value;
                 chart2.Series[message].Points[0] = dp;
+
+                chart2.ChartAreas[0].AxisY.Maximum = Math.Max(chart2.ChartAreas[0].AxisY.Maximum, e.value);
+
+                chart2.Update();
             }
         }
 
@@ -526,6 +530,8 @@ namespace dlib_csharp
             eda.Initialize(@".\shape_predictor_68_face_landmarks.dat");
 
             eda.ParseRules(File.ReadAllLines(@".\FURIA Fuzzy Logic Rules.txt"));
+
+            (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = true;
 
             foreach (String emotion in eda.Emotions)
             {
@@ -612,7 +618,7 @@ namespace dlib_csharp
                 }
             }
 
-            chart2.Update();
+            chart1.Update();
         }
 
         /// <summary>

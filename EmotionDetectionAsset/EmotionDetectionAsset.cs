@@ -283,6 +283,15 @@ namespace AssetPackage
 
         #region Indexers
 
+        /// <summary>
+        /// Indexer to get items within this collection using array index syntax.
+        /// </summary>
+        ///
+        /// <param name="face"> The face. </param>
+        ///
+        /// <returns>
+        /// The indexed item.
+        /// </returns>
         public List<DetectedEmotions> this[Int32 face]
         {
             get
@@ -296,13 +305,30 @@ namespace AssetPackage
             }
         }
 
+        /// <summary>
+        /// Indexer to get items within this collection using array index syntax.
+        /// </summary>
+        ///
+        /// <param name="face">     The face. </param>
+        /// <param name="emotion">  The emotion. </param>
+        ///
+        /// <returns>
+        /// The indexed item.
+        /// </returns>
         public Double this[Int32 face, String emotion]
         {
             get
             {
-                if (EmotionsHistory.ContainsKey(face) && EmotionsHistory[face].Count != 0)
+                if (EmotionsHistory.ContainsKey(face) && EmotionsHistory[face].Count > (settings.SuppressSpikes ? 3 : 0))
                 {
-                    return EmotionsHistory[face].Select(p => p[emotion]).Average();
+                    if (settings.SuppressSpikes)
+                    {
+                        return EmotionsHistory[face].Select(p => p[emotion]).Take(EmotionsHistory[face].Count - 3).Average();
+                    }
+                    else
+                    {
+                        return EmotionsHistory[face].Select(p => p[emotion]).Average();
+                    }
                 }
 
                 return 0;
@@ -385,9 +411,37 @@ namespace AssetPackage
                     EmotionsHistory.Add(ndx, new List<DetectedEmotions>());
                 }
 
+                //! NEW CODE SPIKE FILTERING
+                // 
+                if (settings.SuppressSpikes && EmotionsHistory[ndx].Count >= settings.Average + 2)
+                {
+                    Double SpikeAmplitude = settings.SpikeAmplitude;
+
+                    Double v;
+                    Double lv;
+                    Double nv;
+                    Int32 cnt = EmotionsHistory[ndx].Count;
+
+                    foreach (Int32 face in EmotionsHistory.Keys)
+                    {
+                        foreach (String emotion in Emotions)
+                        {
+                            lv = EmotionsHistory[face][cnt - 2][emotion];
+                            v = EmotionsHistory[face][cnt - 1][emotion];
+                            nv = DetectedEmotions[emotion];
+
+                            if (((v >= lv + SpikeAmplitude) && (v >= nv + SpikeAmplitude)) ||
+                              ((v <= lv - SpikeAmplitude) && (v <= nv - SpikeAmplitude)))
+                            {
+                                EmotionsHistory[face][cnt - 1][emotion] = (lv + nv) / 2;
+                            }
+                        }
+                    }
+                }
+
                 EmotionsHistory[ndx].Add(DetectedEmotions);
 
-                if (EmotionsHistory[ndx].Count > (settings as EmotionDetectionAssetSettings).Average)
+                if (EmotionsHistory[ndx].Count > settings.Average + (settings.SuppressSpikes ? 2 : 0))
                 {
                     EmotionsHistory[ndx].RemoveAt(0);
                 }
@@ -515,6 +569,15 @@ namespace AssetPackage
             return false;
         }
 
+        /// <summary>
+        /// Parse rules.
+        /// </summary>
+        ///
+        /// <param name="rules">    The rules. </param>
+        ///
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
         public Boolean ParseRules(String[] rules)
         {
             Expressions.Clear();
@@ -943,6 +1006,9 @@ namespace AssetPackage
             #endregion Constructors
         }
 
+        /// <summary>
+        /// A fuzzy part.
+        /// </summary>
         public class FuzzyPart
         {
             #region Fields
@@ -1033,6 +1099,9 @@ namespace AssetPackage
             #endregion Methods
         }
 
+        /// <summary>
+        /// A dlib wrapper.
+        /// </summary>
         protected static class DlibWrapper
         {
             #region Methods
@@ -1099,6 +1168,9 @@ namespace AssetPackage
             #endregion Methods
         }
 
+        /// <summary>
+        /// Additional information for emotion events.
+        /// </summary>
         public class EmotionEventArgs
         {
             public Int32 face;

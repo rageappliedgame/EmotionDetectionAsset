@@ -23,6 +23,8 @@ namespace AssetPackage
             Rules = @"FURIA Fuzzy Logic Rules.txt";
             GrayScale = false;
             Average = 5;
+            SuppressSpikes = false;
+            SpikeAmplitude = 0.25;
         }
 
         #endregion Constructors
@@ -90,6 +92,43 @@ namespace AssetPackage
         [Category("Config")]
         [DefaultValue(5)]
         public Int32 Average
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the suppress spikes.
+        /// </summary>
+        ///
+        /// <remarks>
+        /// If set to true, two extra sets of historical data are added to the history to be able to
+        /// perform filtering outside averaged data in the EmotionDetectionAsset [face,emotion] indexer.
+        /// </remarks>
+        ///
+        /// <value>
+        /// true if remove spikes, false if not.
+        /// </value>
+        [Description("Enable or disable Spike Suppression ")]
+        [Category("Config")]
+        [DefaultValue(false)]
+        public bool SuppressSpikes
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the spike amplitude.
+        /// </summary>
+        ///
+        /// <value>
+        /// The spike amplitude.
+        /// </value>
+        [Description("The Amplitude to conside a value a spike ")]
+        [Category("Config")]
+        [DefaultValue(0.25)]
+        public double SpikeAmplitude
         {
             get;
             set;
