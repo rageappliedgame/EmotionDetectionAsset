@@ -316,16 +316,25 @@ namespace dlib_csharp
             {
                 img = reader.ReadVideoFrame();
 
-                if (img != null)
+                //if (i == reader.FrameCount - 5)
+                //{
+                //    Debugger.Break();
+                //}
+
+                if (img != null) 
                 {
-                    pictureBox1.Image = img;
+                    pictureBox1.Image = (Bitmap)img;
 
                     //pictureBox1.Refresh();
 
                     ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
 
-                    //! Dispose the frame when it is no longer required
-                    img.Dispose();
+                    //! Dispose the frame when it is no longer required, but not the last frame.
+                    // 
+                    if (i < reader.FrameCount - 1)
+                    {
+                        img.Dispose();
+                    }
                 }
             }
 

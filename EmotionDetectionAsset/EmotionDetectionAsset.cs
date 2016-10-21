@@ -425,23 +425,24 @@ namespace AssetPackage
                     Double v;
                     Double lv;
                     Double nv;
+
+                    //foreach (Int32 face in EmotionsHistory.Keys)
+                    //{
                     Int32 cnt = EmotionsHistory[ndx].Count;
 
-                    foreach (Int32 face in EmotionsHistory.Keys)
+                    foreach (String emotion in Emotions)
                     {
-                        foreach (String emotion in Emotions)
-                        {
-                            lv = EmotionsHistory[face][cnt - 2][emotion];
-                            v = EmotionsHistory[face][cnt - 1][emotion];
-                            nv = DetectedEmotions[emotion];
+                        lv = EmotionsHistory[ndx][cnt - 2][emotion];
+                        v = EmotionsHistory[ndx][cnt - 1][emotion];
+                        nv = DetectedEmotions[emotion];
 
-                            if (((v >= lv + SpikeAmplitude) && (v >= nv + SpikeAmplitude)) ||
-                              ((v <= lv - SpikeAmplitude) && (v <= nv - SpikeAmplitude)))
-                            {
-                                EmotionsHistory[face][cnt - 1][emotion] = (lv + nv) / 2;
-                            }
+                        if (((v >= lv + SpikeAmplitude) && (v >= nv + SpikeAmplitude)) ||
+                          ((v <= lv - SpikeAmplitude) && (v <= nv - SpikeAmplitude)))
+                        {
+                            EmotionsHistory[ndx][cnt - 1][emotion] = (lv + nv) / 2;
                         }
                     }
+                    //}
                 }
 
                 EmotionsHistory[ndx].Add(DetectedEmotions);
