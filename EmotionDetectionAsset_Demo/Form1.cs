@@ -343,6 +343,12 @@ namespace dlib_csharp
                     worksheet.Column(cofs).Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     cofs++;
 
+                    worksheet.Cells[rofs, cofs].Value = "Stamp";
+                    worksheet.Cells[rofs, cofs].Style.Font.Bold = true;
+                    worksheet.Column(cofs).Style.Numberformat.Format = "000.000";
+                    worksheet.Column(cofs).Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                    cofs++;
+
                     foreach (String emotion in eda.Emotions)
                     {
                         worksheet.Cells[rofs, cofs].Value = emotion;
@@ -394,6 +400,9 @@ namespace dlib_csharp
                             worksheet.Cells[rofs, cofs].Value = ts.Milliseconds;
                             cofs++;
 
+                            worksheet.Cells[rofs, cofs].Value = ts.TotalSeconds/* + ts.Milliseconds / 1000.0*/;
+                            cofs++;
+
                             foreach (String emotion in eda.Emotions)
                             {
                                 //for (Int32 j = 0; j < eda.Faces.Count; j++)
@@ -406,6 +415,11 @@ namespace dlib_csharp
                                     {
                                         worksheet.Cells[rofs, cofs].Style.Fill.PatternType = ExcelFillStyle.Solid;
                                         worksheet.Cells[rofs, cofs].Style.Fill.BackgroundColor.SetColor(Color.LightGreen);
+                                    }
+                                    else if (eda[0, emotion] > 0.4)
+                                    {
+                                        worksheet.Cells[rofs, cofs].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        worksheet.Cells[rofs, cofs].Style.Fill.BackgroundColor.SetColor(Color.LightCoral);
                                     }
 
                                     cofs++;
