@@ -43,9 +43,10 @@
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.button6 = new System.Windows.Forms.Button();
-            this.webCamCapture1 = new WebCam_Capture.WebCamCapture();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.webCamCapture1 = new WebCam_Capture.WebCamCapture();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
@@ -98,8 +99,10 @@
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(1072, 891);
+            this.label1.Location = new System.Drawing.Point(1072, 872);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(93, 32);
             this.label1.TabIndex = 4;
@@ -154,18 +157,6 @@
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
-            // webCamCapture1
-            // 
-            this.webCamCapture1.CaptureHeight = 240;
-            this.webCamCapture1.CaptureWidth = 320;
-            this.webCamCapture1.FrameNumber = ((ulong)(0ul));
-            this.webCamCapture1.Location = new System.Drawing.Point(0, 0);
-            this.webCamCapture1.Name = "WebCamCapture";
-            this.webCamCapture1.Size = new System.Drawing.Size(342, 252);
-            this.webCamCapture1.TabIndex = 0;
-            this.webCamCapture1.TimeToCapture_milliseconds = 100;
-            this.webCamCapture1.ImageCaptured += new WebCam_Capture.WebCamCapture.WebCamEventHandler(this.webCamCapture1_ImageCaptured);
-            // 
             // chart1
             // 
             chartArea1.Name = "ChartArea1";
@@ -195,6 +186,25 @@
             this.chart2.Size = new System.Drawing.Size(606, 532);
             this.chart2.TabIndex = 11;
             this.chart2.Text = "chart2";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.DefaultExt = "mpg";
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Filter = "Video files|*.*";
+            this.openFileDialog1.Title = "Select a Video file";
+            // 
+            // webCamCapture1
+            // 
+            this.webCamCapture1.CaptureHeight = 240;
+            this.webCamCapture1.CaptureWidth = 320;
+            this.webCamCapture1.FrameNumber = ((ulong)(0ul));
+            this.webCamCapture1.Location = new System.Drawing.Point(0, 0);
+            this.webCamCapture1.Name = "WebCamCapture";
+            this.webCamCapture1.Size = new System.Drawing.Size(342, 252);
+            this.webCamCapture1.TabIndex = 0;
+            this.webCamCapture1.TimeToCapture_milliseconds = 100;
+            this.webCamCapture1.ImageCaptured += new WebCam_Capture.WebCamCapture.WebCamEventHandler(this.webCamCapture1_ImageCaptured);
             // 
             // Form1
             // 
@@ -242,6 +252,7 @@
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 

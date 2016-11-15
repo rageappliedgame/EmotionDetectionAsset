@@ -19,6 +19,8 @@ namespace dlib_csharp
     using AssetManagerPackage;
 
     using AssetPackage;
+    using OfficeOpenXml;
+    using OfficeOpenXml.Style;
 
     public partial class Form1 : Form
     {
@@ -306,39 +308,132 @@ namespace dlib_csharp
             //! Create instance of video reader
             VideoFileReader reader = new VideoFileReader();
 
-            //! Open video file
-            reader.Open(@"C:\Virtual Machines\X-HRL-A10430\Videos\Wiskunde Academie\Bewijzen - Waarom gaan de zwaartelijnen door 1 punt, het zwaartepunt_ - WiskundeAcademie.mp4");
-
-            Image img;
-
-            // Read 100 video frames out of it
-            for (Int32 i = 0; i < reader.FrameCount; i++)
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                img = reader.ReadVideoFrame();
+                //! Open video file
+                reader.Open(openFileDialog1.FileName);
 
-                //if (i == reader.FrameCount - 5)
-                //{
-                //    Debugger.Break();
-                //}
+                String xlsx = Path.ChangeExtension(openFileDialog1.FileName, ".xlsx");
 
-                if (img != null) 
+                if (File.Exists(xlsx))
                 {
-                    pictureBox1.Image = (Bitmap)img;
-
-                    //pictureBox1.Refresh();
-
-                    ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
-
-                    //! Dispose the frame when it is no longer required, but not the last frame.
-                    // 
-                    if (i < reader.FrameCount - 1)
-                    {
-                        img.Dispose();
-                    }
+                    File.Delete(xlsx);
                 }
+
+                Image img;
+
+                Int32 rofs;
+                Int32 cofs;
+
+                using (ExcelPackage package = new ExcelPackage(new FileInfo(xlsx)))
+                {
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Emotions");
+
+                    rofs = 1;
+                    cofs = 1;
+
+                    worksheet.Cells[rofs, cofs].Value = "Time";
+                    worksheet.Cells[rofs, cofs].Style.Font.Bold = true;
+                    worksheet.Column(cofs).Style.Numberformat.Format = "[h]:mm:ss";
+                    cofs++;
+
+                    worksheet.Cells[rofs, cofs].Value = "Msec";
+                    worksheet.Cells[rofs, cofs].Style.Font.Bold = true;
+                    worksheet.Column(cofs).Style.Numberformat.Format = "000";
+                    worksheet.Column(cofs).Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                    cofs++;
+
+                    foreach (String emotion in eda.Emotions)
+                    {
+                        worksheet.Cells[rofs, cofs].Value = emotion;
+                        worksheet.Cells[rofs, cofs].Style.Font.Bold = true;
+                        worksheet.Column(cofs).Style.Numberformat.Format = "0.00";
+
+                        cofs++;
+                    }
+
+                    rofs++;
+                    cofs = 1;
+
+                    for (Int32 i = 0; i < reader.FrameCount; i++)
+                    {
+                        //if (i == 5000)
+                        //{
+                        //    //reader.Close();
+                        //    break;
+                        //}
+
+                        img = reader.ReadVideoFrame();
+
+                        TimeSpan ts = TimeSpan.FromMilliseconds((1000.0 * i) / reader.FrameRate);
+
+                        label1.Text = ts.ToString("G");
+
+                        //if (ts.Seconds == 52)
+                        //{
+                        //    Debugger.Break();
+                        //}
+                        // 
+                        //if (i == reader.FrameCount - 5)
+                        //{
+                        //    Debugger.Break();
+                        //}
+
+                        if (img != null)
+                        {
+                            pictureBox1.Image = (Bitmap)img;
+
+                            //pictureBox1.Refresh();
+
+                            ProcessImageIntoEmotions(pictureBox1.Image, i % 10 == 0);
+
+                            worksheet.Cells[rofs, cofs].Value = ts.TotalSeconds / (24 * 60 * 60);
+                            // String.Format("{0}:{1}:{2}", ts.Hours, ts.Minutes, ts.Seconds);
+                            cofs++;
+
+                            worksheet.Cells[rofs, cofs].Value = ts.Milliseconds;
+                            cofs++;
+
+                            foreach (String emotion in eda.Emotions)
+                            {
+                                //for (Int32 j = 0; j < eda.Faces.Count; j++)
+                                if (eda.Faces.Count > 0)
+                                {
+                                    //String emo = String.Format("{0:0.00}", eda[0, emotion]);
+
+                                    worksheet.Cells[rofs, cofs].Value = eda[0, emotion];
+                                    if (eda[0, emotion] > 0.8)
+                                    {
+                                        worksheet.Cells[rofs, cofs].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        worksheet.Cells[rofs, cofs].Style.Fill.BackgroundColor.SetColor(Color.LightGreen);
+                                    }
+
+                                    cofs++;
+                                }
+                            }
+
+                            rofs++;
+                            cofs = 1;
+
+                            //! Dispose the frame when it is no longer required, but not the last frame.
+                            // 
+                            if (i < reader.FrameCount - 1)
+                            {
+                                img.Dispose();
+                            }
+                        }
+                    }
+
+                    package.Save();
+                }
+
+                reader.Close();
             }
 
-            reader.Close();
+            foreach (String emotion in eda.Emotions)
+            {
+                Messages.unsubscribe(subscriptions[emotion]);
+            }
         }
 
         /// <summary>
@@ -544,11 +639,13 @@ namespace dlib_csharp
 
             foreach (String emotion in eda.Emotions)
             {
-                Messages.subscribe(emotion, EmotionUpdateEventHandler);
+                subscriptions.Add(emotion, Messages.subscribe(emotion, EmotionUpdateEventHandler));
             }
 
             //listView1.SetDoubleBuffered(true);
         }
+
+        Dictionary<String, String> subscriptions = new Dictionary<String, String>();
 
         /// <summary>
         /// Init chart.
@@ -643,7 +740,6 @@ namespace dlib_csharp
                     {
                         //! Process detected landmarks into emotions.
                         //
-
                         while (listView1.Columns.Count - 1 > eda.Faces.Count)
                         {
                             listView1.Columns.RemoveAt(1);

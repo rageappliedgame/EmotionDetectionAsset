@@ -109,6 +109,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\EPPlus\EPPlus\EPPlus.csproj">
+      <Project>{7b288026-5502-4a39-bf41-77e086f3e4a3}</Project>
+      <Name>EPPlus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EmotionDetectionAsset\EmotionDetectionAsset.csproj">
       <Project>{4d1f98c7-6827-4f99-b676-f5c9af632609}</Project>
       <Name>EmotionDetectionAsset</Name>
