@@ -1,17 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using AssetManagerPackage;
-using AssetPackage;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static AssetPackage.EmotionDetectionAsset;
+﻿/*
+ * Copyright 2016 Open University of the Netherlands
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * This project has received funding from the European Union’s Horizon
+ * 2020 research and innovation programme under grant agreement No 644187.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace EmotionDetectionAsset_Test
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using AssetManagerPackage;
+    using AssetPackage;
+
+    using static AssetPackage.EmotionDetectionAsset;
+
     [TestClass]
     public class UnitTest1
     {
@@ -47,22 +65,19 @@ namespace EmotionDetectionAsset_Test
 
             EmotionDetectionAsset eda = new EmotionDetectionAsset();
 
-            foreach (String line in File.ReadAllLines(@"..\..\..\database\FURIA Fuzzy Logic Rules.txt"))
+            if (eda.ParseRules(File.ReadAllLines(@"..\..\..\database\FURIA Fuzzy Logic Rules.txt")))
             {
-                if (eda.ParseRule(line))
-                {
 
-                    // Output:
-                    //Emotions = Happy(CF = 0.97)
-                    //(V30 in [159.608, 160.424, inf, inf])
-                    //(V35 in [30.0655, 30.2536, inf, inf])
+                // Output:
+                //Emotions = Happy(CF = 0.97)
+                //(V30 in [159.608, 160.424, inf, inf])
+                //(V35 in [30.0655, 30.2536, inf, inf])
 
-                    //eda.CheckValues(eda.expressions.Skip(0).First(), "V30", new Double[] { 20, 160, 180 });
-                    //eda.CheckValues(eda.expressions.Skip(0).First(), "V35", new Double[] { 20, 30.0655, 30.0656, 30.1, 30.2535, 30.2536, 32 });
-                }
+                //eda.CheckValues(eda.expressions.Skip(0).First(), "V30", new Double[] { 20, 160, 180 });
+                //eda.CheckValues(eda.expressions.Skip(0).First(), "V35", new Double[] { 20, 30.0655, 30.0656, 30.1, 30.2535, 30.2536, 32 });
             }
 
-            Debug.Print("{0} Expressions", eda.expressions.Count);
+            Debug.Print("{0} Emotions found in Rules", eda.Emotions.Count);
         }
 
         [TestMethod]
