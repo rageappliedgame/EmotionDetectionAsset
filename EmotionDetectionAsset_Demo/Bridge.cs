@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
- namespace dlib_csharp
+
+namespace dlib_csharp
 {
     using System.Diagnostics;
     using AssetPackage;
@@ -28,7 +28,10 @@
     {
         public void Log(Severity severity, string msg)
         {
-            Debug.WriteLine(msg);
+            if (severity != Severity.Verbose)
+            {
+                Debug.WriteLine(msg);
+            }
         }
     }
 

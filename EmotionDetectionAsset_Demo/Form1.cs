@@ -36,13 +36,14 @@ namespace dlib_csharp
     using AssetManagerPackage;
 
     using AssetPackage;
+    using Ionic.Zip;
     using OfficeOpenXml;
     using OfficeOpenXml.Style;
 
     public partial class Form1 : Form
     {
         #region Fields
-
+        const String CKPlusPlath = @"C:\Virtual Machines\CK+";
         const String database = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\EmotionDetectionAsset\EmotionDetectionAsset_Test\bin\Debug\shape_predictor_68_face_landmarks.dat";
         const String face1 = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\dlib-csharp\franck_02159.bmp";
         const String face2 = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\dlib-csharp\franck_02159m.bmp";
@@ -621,7 +622,7 @@ namespace dlib_csharp
         /// <param name="e">        Emotion event information. </param>
         private void EmotionUpdateEventHandler(String message, EmotionDetectionAsset.EmotionEventArgs e)
         {
-            Console.WriteLine("EmotionUpdateEventHandler({0}: [{1}->{2:0.00}])", message.PadRight(16), e.face, e.value);
+            eda.Log(Severity.Verbose, "EmotionUpdateEventHandler({0}: [{1}->{2:0.00}])", message.PadRight(16), e.face, e.value);
 
             if (e.face == 0)
             {
@@ -1219,5 +1220,194 @@ namespace dlib_csharp
         }
 
         #endregion Nested Types
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            Directory.CreateDirectory(@".\CKplus");
+
+            using (ZipFile zip = new ZipFile(Path.Combine(CKPlusPlath, "Emotion_labels.zip")))
+            {
+                foreach (ZipEntry ze in zip)
+                {
+                    if (!ze.IsDirectory)
+                    {
+                        using (FileStream fs = new FileStream(Path.Combine(@".\CKplus", Path.GetFileName(ze.FileName)), FileMode.Create))
+                        {
+                            ze.Extract(fs);
+                            fs.Close();
+                        }
+                    }
+                }
+            }
+
+            using (ZipFile zip = new ZipFile(Path.Combine(CKPlusPlath, "extended-cohn-kanade-images.zip")))
+            {
+                foreach (ZipEntry ze in zip)
+                {
+                    if (!ze.IsDirectory)
+                    {
+                        if (File.Exists(Path.Combine(@".\CKplus",
+                            String.Format("{0}_emotion.txt",
+                            Path.GetFileNameWithoutExtension(ze.FileName)))))
+                        {
+                            using (FileStream fs = new FileStream(
+                                Path.Combine(@".\CKplus", Path.GetFileName(ze.FileName)),
+                                FileMode.Create))
+                            {
+                                ze.Extract(fs);
+                                fs.Close();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            //! Temporary switch of both spike detection and averaging.
+            // 
+            Int32 avg = (eda.Settings as EmotionDetectionAssetSettings).Average;
+            Boolean spike = (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes;
+
+            //Int32 mismatches = 0;
+
+            Dictionary<String, Int32> cnts = new Dictionary<String, Int32>();
+
+            cnts.Add("Neutral", 0);
+            cnts.Add("Anger", 0);
+            cnts.Add("Contempt", 0);       // Not present in Fuzzy rules.
+            cnts.Add("Disgust", 0);
+            cnts.Add("Fear", 0);
+            cnts.Add("Happy", 0);
+            cnts.Add("Sad", 0);            //Sadness in CK+ documentation
+            cnts.Add("Surprise", 0);
+
+            (eda.Settings as EmotionDetectionAssetSettings).Average = 1;
+            (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = false;
+
+            String xlsx = @".\CKplus\ckplus.xlsx";
+
+            if (File.Exists(xlsx))
+            {
+                File.Delete(xlsx);
+            }
+
+            Int32 rofs;
+            Int32 cofs;
+
+            using (ExcelPackage package = new ExcelPackage(new FileInfo(xlsx)))
+            {
+                ExcelWorksheet ws1 = package.Workbook.Worksheets.Add("Emotions");
+                ExcelWorksheet ws2 = package.Workbook.Worksheets.Add("CK+");
+
+                rofs = 1;
+                cofs = 1;
+
+                ws1.Cells[rofs, cofs++].Value = "CkImage";
+                ws1.Cells[rofs, cofs++].Value = "CkEmotion";
+                ws1.Cells[rofs, cofs++].Value = "RageEmotions";
+                ws1.Cells[rofs, cofs++].Value = "RageScores";
+
+                cofs = 1;
+                rofs++;
+
+                foreach (String fn in Directory.EnumerateFiles(@".\CKplus", "*.png"))
+                {
+                    cofs = 1;
+
+                    InitChart();
+
+                    pictureBox1.Image = Image.FromFile(fn);
+
+                    ws1.Cells[rofs, cofs++].Value = Path.GetFileNameWithoutExtension(fn);
+
+                    String txt = Path.Combine(@".\CKplus", String.Format("{0}_emotion.txt", Path.GetFileNameWithoutExtension(fn)));
+
+                    String score = File.ReadAllText(txt).Trim();
+
+                    Int32 emo = (Int32)Double.Parse(score);
+
+                    String emotion = String.Empty;
+
+                    switch (emo)
+                    {
+                        case 0:
+                            emotion = "Neutral";
+                            break;
+                        case 1:
+                            emotion = "Anger";
+                            break;
+                        case 2:
+                            emotion = "Contempt";       // 
+                            break;
+                        case 3:
+                            emotion = "Disgust";
+                            break;
+                        case 4:
+                            emotion = "Fear";
+                            break;
+                        case 5:
+                            emotion = "Happy";
+                            break;
+                        case 6:
+                            emotion = "Sad";            //Sadness in CK+ documentation
+                            break;
+                        case 7:
+                            emotion = "Surprise";
+                            break;
+                    }
+
+                    cnts[emotion] += 1;
+
+                    ws1.Cells[rofs, cofs++].Value = emotion;
+
+                    ProcessImageIntoEmotions(pictureBox1.Image, true);
+
+                    foreach (String em in eda.Emotions)
+                    {
+                        //for (Int32 j = 0; j < eda.Faces.Count; j++)
+                        if (eda.Faces.Count > 0)
+                        {
+                            //String emo = String.Format("{0:0.00}", eda[0, emotion]);
+                            if (eda[0, em] > .4)
+                            {
+                                ws1.Cells[rofs, cofs++].Value = em;
+                                ws1.Cells[rofs, cofs++].Value = eda[0, em];
+
+                                cofs -= 2;
+                                if (!emotion.Equals(em, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    ws1.Cells[rofs, cofs].Style.Font.Color.SetColor(Color.Red);
+                                }
+
+                                rofs++;
+                            }
+                        }
+                    }
+                }
+
+                rofs = 1;
+                cofs = 1;
+
+                ws2.Cells[rofs, cofs++].Value = "Emotion";
+                ws2.Cells[rofs, cofs++].Value = "Images";
+
+                foreach (KeyValuePair<String, Int32> kvp in cnts)
+                {
+                    rofs++;
+                    cofs = 1;
+
+                    ws2.Cells[rofs, cofs++].Value = kvp.Key;
+                    ws2.Cells[rofs, cofs++].Value = kvp.Value;
+                }
+                package.Save();
+            }
+
+            //! Restore of both spike detection and averaging.
+            // 
+            (eda.Settings as EmotionDetectionAssetSettings).Average = avg;
+            (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = spike;
+        }
     }
 }

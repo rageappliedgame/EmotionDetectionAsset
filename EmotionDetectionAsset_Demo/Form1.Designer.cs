@@ -46,7 +46,9 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.button7 = new System.Windows.Forms.Button();
             this.webCamCapture1 = new WebCam_Capture.WebCamCapture();
+            this.button8 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
@@ -194,6 +196,16 @@
             this.openFileDialog1.Filter = "Video files|*.*";
             this.openFileDialog1.Title = "Select a Video file";
             // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(2203, 153);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(135, 83);
+            this.button7.TabIndex = 12;
+            this.button7.Text = "button7";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
+            // 
             // webCamCapture1
             // 
             this.webCamCapture1.CaptureHeight = 240;
@@ -206,11 +218,23 @@
             this.webCamCapture1.TimeToCapture_milliseconds = 100;
             this.webCamCapture1.ImageCaptured += new WebCam_Capture.WebCamCapture.WebCamEventHandler(this.webCamCapture1_ImageCaptured);
             // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(2203, 252);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(135, 83);
+            this.button8.TabIndex = 13;
+            this.button8.Text = "button8";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.button8_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(240F, 240F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(2742, 1306);
+            this.Controls.Add(this.button8);
+            this.Controls.Add(this.button7);
             this.Controls.Add(this.chart2);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.button6);
@@ -253,6 +277,8 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button8;
     }
 }
 

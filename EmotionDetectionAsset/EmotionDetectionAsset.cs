@@ -208,15 +208,6 @@ namespace AssetPackage
         /// </summary>
         private static Regex rg2 = new Regex(@"Emotions=(?<emotion>[A-Za-z]*) \(CF = (?<cf>[0-9\.]+)\)");
 
-        ///// <summary>
-        ///// The detected emotions.
-        ///// </summary>
-        /////
-        ///// <remarks>
-        ///// The Dictionary key is the detected emotion.The Dictionary value is a list emotions for every
-        ///// detected face.
-        ///// </remarks>
-        //private DetectedEmotions Emotions = new DetectedEmotions();
         /// <summary>
         /// The history of emotions.
         /// 
@@ -299,6 +290,11 @@ namespace AssetPackage
         /// Indexer to get items within this collection using array index syntax.
         /// </summary>
         ///
+        /// <remarks>
+        /// This is a moving average filtered value. 
+        /// Set Settings.Average to 1 and Settings.SuppressSpikes to false to disable.
+        /// </remarks>
+        ///
         /// <param name="face"> The face. </param>
         ///
         /// <returns>
@@ -320,6 +316,11 @@ namespace AssetPackage
         /// <summary>
         /// Indexer to get items within this collection using array index syntax.
         /// </summary>
+        ///
+        /// <remarks>
+        /// This is a moving average filtered value. 
+        /// Set Settings.Average to 1 and Settings.SuppressSpikes to false to disable.
+        /// </remarks>
         ///
         /// <param name="face">     The face. </param>
         /// <param name="emotion">  The emotion. </param>
