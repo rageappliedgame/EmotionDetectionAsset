@@ -200,9 +200,9 @@
             // 
             this.button7.Location = new System.Drawing.Point(2203, 153);
             this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(135, 83);
+            this.button7.Size = new System.Drawing.Size(217, 83);
             this.button7.TabIndex = 12;
-            this.button7.Text = "button7";
+            this.button7.Text = "Extract CK+";
             this.button7.UseVisualStyleBackColor = true;
             this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
@@ -222,9 +222,9 @@
             // 
             this.button8.Location = new System.Drawing.Point(2203, 252);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(135, 83);
+            this.button8.Size = new System.Drawing.Size(217, 83);
             this.button8.TabIndex = 13;
-            this.button8.Text = "button8";
+            this.button8.Text = "Process CK+";
             this.button8.UseVisualStyleBackColor = true;
             this.button8.Click += new System.EventHandler(this.button8_Click);
             // 

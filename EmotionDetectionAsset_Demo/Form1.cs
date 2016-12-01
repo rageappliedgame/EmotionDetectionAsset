@@ -1309,6 +1309,11 @@ namespace dlib_csharp
                 ws1.Cells[rofs, cofs++].Value = "RageEmotions";
                 ws1.Cells[rofs, cofs++].Value = "RageScores";
 
+                for (Int32 i = 0; i < 8; i++)
+                {
+                    ws1.Cells[rofs, cofs + 1 + i].Value = CK2Emotion(i);
+                }
+
                 cofs = 1;
                 rofs++;
 
@@ -1330,33 +1335,7 @@ namespace dlib_csharp
 
                     String emotion = String.Empty;
 
-                    switch (emo)
-                    {
-                        case 0:
-                            emotion = "Neutral";
-                            break;
-                        case 1:
-                            emotion = "Anger";
-                            break;
-                        case 2:
-                            emotion = "Contempt";       // 
-                            break;
-                        case 3:
-                            emotion = "Disgust";
-                            break;
-                        case 4:
-                            emotion = "Fear";
-                            break;
-                        case 5:
-                            emotion = "Happy";
-                            break;
-                        case 6:
-                            emotion = "Sad";            //Sadness in CK+ documentation
-                            break;
-                        case 7:
-                            emotion = "Surprise";
-                            break;
-                    }
+                    emotion = CK2Emotion(emo);
 
                     cnts[emotion] += 1;
 
@@ -1364,34 +1343,56 @@ namespace dlib_csharp
 
                     ProcessImageIntoEmotions(pictureBox1.Image, true);
 
-                    foreach (String em in eda.Emotions)
+                    //for (Int32 j = 0; j < eda.Faces.Count; j++)
+                    if (eda.Faces.Count > 0)
                     {
-                        //for (Int32 j = 0; j < eda.Faces.Count; j++)
-                        if (eda.Faces.Count > 0)
+                        String ee = String.Empty;
+                        Double vv = 0;
+
+                        foreach (String em in eda.Emotions)
                         {
-                            //String emo = String.Format("{0:0.00}", eda[0, emotion]);
-                            if (eda[0, em] > .4)
+                            if (eda[0, em] > vv)
                             {
-                                ws1.Cells[rofs, cofs++].Value = em;
-                                ws1.Cells[rofs, cofs++].Value = eda[0, em];
-
-                                cofs -= 2;
-                                if (!emotion.Equals(em, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    ws1.Cells[rofs, cofs].Style.Font.Color.SetColor(Color.Red);
-                                }
-
-                                rofs++;
+                                ee = em;
+                                vv = eda[0, em];
                             }
                         }
+
+                        if (vv > .4)
+                        {
+                            ws1.Cells[rofs, cofs++].Value = ee;
+                            ws1.Cells[rofs, cofs++].Value = vv;
+
+                            ws1.Cells[rofs, cofs + emo + 1].Value = emotion.Equals(ee, StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+
+                            cofs -= 2;
+                            if (!emotion.Equals(ee, StringComparison.OrdinalIgnoreCase))
+                            {
+                                ws1.Cells[rofs, cofs].Style.Font.Color.SetColor(Color.Red);
+                            }
+
+                            rofs++;
+                        }
+                        else
+                        {
+                            rofs++;
+                        }
+                    }
+                    else
+                    {
+                        rofs++;
                     }
                 }
+
+                Int32 max = rofs;
 
                 rofs = 1;
                 cofs = 1;
 
                 ws2.Cells[rofs, cofs++].Value = "Emotion";
                 ws2.Cells[rofs, cofs++].Value = "Images";
+                ws2.Cells[rofs, cofs++].Value = "Correct";
+                ws2.Cells[rofs, cofs++].Value = "Percentage";
 
                 foreach (KeyValuePair<String, Int32> kvp in cnts)
                 {
@@ -1400,6 +1401,14 @@ namespace dlib_csharp
 
                     ws2.Cells[rofs, cofs++].Value = kvp.Key;
                     ws2.Cells[rofs, cofs++].Value = kvp.Value;
+
+                    String cells = "FGHIJKLM";
+
+                    ws2.Cells[rofs, cofs++].Formula = String.Format("=SUM(Emotions!{0}2:Emotions!{0}{1})", cells[rofs - 2], max - 1);
+
+                    String fmt = String.Format("={0}{1}/{2}{1}", "C", rofs, "B");
+                    ws2.Cells[rofs, cofs++].Formula = fmt;
+                    ws2.Cells[rofs, cofs-1].Style.Numberformat.Format = "#%";
                 }
                 package.Save();
             }
@@ -1408,6 +1417,31 @@ namespace dlib_csharp
             // 
             (eda.Settings as EmotionDetectionAssetSettings).Average = avg;
             (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = spike;
+        }
+
+        private static string CK2Emotion(Int32 emo)
+        {
+            switch (emo)
+            {
+                case 0:
+                    return "Neutral";
+                case 1:
+                    return "Anger";
+                case 2:
+                    return "Contempt";       // 
+                case 3:
+                    return "Disgust";
+                case 4:
+                    return "Fear";
+                case 5:
+                    return "Happy";
+                case 6:
+                    return "Sad";            //Sadness in CK+ documentation
+                case 7:
+                    return "Surprise";
+            }
+
+            return "error";
         }
     }
 }
