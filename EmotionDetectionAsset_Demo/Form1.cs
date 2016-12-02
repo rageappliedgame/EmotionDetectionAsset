@@ -26,6 +26,7 @@ namespace dlib_csharp
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
+    using System.Threading;
     using System.Windows.Forms;
     using System.Windows.Forms.DataVisualization.Charting;
 
@@ -1246,9 +1247,10 @@ namespace dlib_csharp
                 {
                     if (!ze.IsDirectory)
                     {
-                        if (File.Exists(Path.Combine(@".\CKplus",
-                            String.Format("{0}_emotion.txt",
-                            Path.GetFileNameWithoutExtension(ze.FileName)))))
+                        String tag = Path.Combine(@".\CKplus",
+    String.Format("{0}_emotion.txt", Path.GetFileNameWithoutExtension(ze.FileName)));
+
+                        if (File.Exists(tag))
                         {
                             using (FileStream fs = new FileStream(
                                 Path.Combine(@".\CKplus", Path.GetFileName(ze.FileName)),
@@ -1257,6 +1259,32 @@ namespace dlib_csharp
                                 ze.Extract(fs);
                                 fs.Close();
                             }
+                        }
+                    }
+                }
+            }
+
+            using (ZipFile zip = new ZipFile(Path.Combine(CKPlusPlath, "extended-cohn-kanade-images.zip")))
+            {
+                foreach (ZipEntry ze in zip)
+                {
+                    if (!ze.IsDirectory)
+                    {
+                        String tag = Path.Combine(@".\CKplus",
+                            String.Format("{0}_emotion.txt", Path.GetFileNameWithoutExtension(ze.FileName)));
+
+                        if (!File.Exists(tag) &&
+                            Path.GetFileNameWithoutExtension(ze.FileName).EndsWith("_00000001"))
+                        {
+                            using (FileStream fs = new FileStream(
+                                Path.Combine(@".\CKplus", Path.GetFileName(ze.FileName)),
+                                FileMode.Create))
+                            {
+                                ze.Extract(fs);
+                                fs.Close();
+                            }
+
+                            File.WriteAllText(tag, "0");
                         }
                     }
                 }
@@ -1343,6 +1371,9 @@ namespace dlib_csharp
 
                     ProcessImageIntoEmotions(pictureBox1.Image, true);
 
+                    Application.DoEvents();
+                    Thread.Sleep(0);
+
                     //for (Int32 j = 0; j < eda.Faces.Count; j++)
                     if (eda.Faces.Count > 0)
                     {
@@ -1408,7 +1439,7 @@ namespace dlib_csharp
 
                     String fmt = String.Format("={0}{1}/{2}{1}", "C", rofs, "B");
                     ws2.Cells[rofs, cofs++].Formula = fmt;
-                    ws2.Cells[rofs, cofs-1].Style.Numberformat.Format = "#%";
+                    ws2.Cells[rofs, cofs - 1].Style.Numberformat.Format = "#%";
                 }
                 package.Save();
             }
