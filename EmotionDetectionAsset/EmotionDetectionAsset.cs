@@ -62,7 +62,7 @@ namespace AssetPackage
     /// The Value is a list of 68 landmark points.
     /// </summary>
     using DetectedFaces = System.Collections.Generic.Dictionary<EmotionDetectionAsset.RECT, System.Collections.Generic.List<EmotionDetectionAsset.POINT>>;
-
+    using System.Globalization;
     /// <summary>
     /// An asset.
     /// </summary>
@@ -529,7 +529,7 @@ namespace AssetPackage
                             if (m.Success)
                             {
                                 expression.Emotion = m.Groups["emotion"].Value;
-                                expression.CF = Double.Parse(m.Groups["cf"].Value);
+                                expression.CF = Double.Parse(m.Groups["cf"].Value,CultureInfo.InvariantCulture);
                             }
                         }
                     }
@@ -693,7 +693,7 @@ namespace AssetPackage
         /// </returns>
         private static Double ParseNumber(Match m, String grp, Double def)
         {
-            return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value);
+            return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>

@@ -55,11 +55,9 @@
       <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="EPPlus">
-      <HintPath>..\..\Assemblies\Debug\EPPlus.dll</HintPath>
-    </Reference>
-    <Reference Include="RageAssetManager">
-      <HintPath>..\..\..\..\..\..\..\..\Rage\AssetManager\RageAssetManager\bin\Debug\RageAssetManager.dll</HintPath>
+    <Reference Include="EPPlus, Version=4.1.0.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.1.0\lib\net40\EPPlus.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -97,9 +95,8 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="..\database\shape_predictor_68_face_landmarks.dat">
+    <None Include="..\data\shape_predictor_68_face_landmarks.dat">
       <Link>shape_predictor_68_face_landmarks.dat</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -116,19 +113,22 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AssetManager\RageAssetManager\RageAssetManager.csproj">
+      <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
+      <Name>RageAssetManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EmotionDetectionAsset\EmotionDetectionAsset.csproj">
       <Project>{4d1f98c7-6827-4f99-b676-f5c9af632609}</Project>
       <Name>EmotionDetectionAsset</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\dlib-master\examples\build\Release\dlibwrapper.dll">
+    <Content Include="..\build\Release\dlibwrapper.dll">
       <Link>dlibwrapper.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\database\FURIA Fuzzy Logic Rules.txt">
+    <Content Include="..\data\FURIA Fuzzy Logic Rules.txt">
       <Link>FURIA Fuzzy Logic Rules.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\testinput\Kiavash1.jpg">
       <Link>Kiavash1.jpg</Link>

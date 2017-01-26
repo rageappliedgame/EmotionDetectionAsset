@@ -39,15 +39,16 @@ namespace dlib_csharp
     using Ionic.Zip;
     using OfficeOpenXml;
     using OfficeOpenXml.Style;
-
+    using System.Globalization;
     public partial class Form1 : Form
     {
         #region Fields
-        const String CKPlusPlath = @"C:\Virtual Machines\CK+";
-        const String database = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\EmotionDetectionAsset\EmotionDetectionAsset_Test\bin\Debug\shape_predictor_68_face_landmarks.dat";
-        const String face1 = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\dlib-csharp\franck_02159.bmp";
-        const String face2 = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\dlib-csharp\franck_02159m.bmp";
-        const String wrapper = @"C:\Users\wvd_v\Documents\Visual Studio 2015\Projects\dlib-master\examples\build\Release\dlibwrapper.dll";
+        const String CKPlusPlath = @"..\..\..\data\CK+";
+        const String database = @"..\..\..\data\shape_predictor_68_face_landmarks.dat";
+        const String face1 = @"..\..\..\faces\franck_02159.bmp";
+        const String fuzzy = @"..\..\..\data\FURIA Fuzzy Logic Rules.txt";
+        const String face2 = @"..\..\..\faces\franck_02159m.bmp";
+        const String wrapper =  @"dlibwrapper.dll";
 
         Boolean busy = false;
         Int32 counter = 0;
@@ -663,9 +664,9 @@ namespace dlib_csharp
 
             AssetManager.Instance.Bridge = new Bridge();
 
-            eda.Initialize(@".\shape_predictor_68_face_landmarks.dat");
+            eda.Initialize(Path.GetFullPath(database));
 
-            eda.ParseRules(File.ReadAllLines(@".\FURIA Fuzzy Logic Rules.txt"));
+            eda.ParseRules(File.ReadAllLines(fuzzy));
 
             (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = true;
 
@@ -1331,7 +1332,7 @@ namespace dlib_csharp
 
                     String score = File.ReadAllText(txt).Trim();
 
-                    Int32 emo = (Int32)Double.Parse(score);
+                    Int32 emo = (Int32)Double.Parse(score, CultureInfo.InvariantCulture);
 
                     String emotion = String.Empty;
 
@@ -1443,5 +1444,6 @@ namespace dlib_csharp
 
             return "error";
         }
+
     }
 }
