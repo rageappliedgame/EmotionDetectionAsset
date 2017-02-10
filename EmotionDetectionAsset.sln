@@ -13,9 +13,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dlibwrapper", "..\dlib-mast
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmotionDetectionAsset_Demo", "EmotionDetectionAsset_Demo\EmotionDetectionAsset_Demo.csproj", "{02272F21-DC9B-4CF1-BAC7-57FA4FA10ED3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageAssetManager", "..\AssetManager\RageAssetManager\RageAssetManager.csproj", "{DA8E9056-2E52-4029-81EB-A2D167614C47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManager", "..\AssetManager\RageAssetManager\AssetManager.csproj", "{DA8E9056-2E52-4029-81EB-A2D167614C47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageAssetManager - Portable", "..\AssetManager\RageAssetManager_Portable\RageAssetManager - Portable.csproj", "{7F2712C1-575C-4883-88AA-E5B31070354F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManager_Portable", "..\AssetManager\RageAssetManager_Portable\AssetManager_Portable.csproj", "{7F2712C1-575C-4883-88AA-E5B31070354F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AFC9F6A3-87D9-437B-BED5-4642A9BD9A7C}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.txt = Readme.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

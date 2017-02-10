@@ -55,9 +55,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManager\RageAssetManager\RageAssetManager.csproj">
+    <ProjectReference Include="..\..\AssetManager\RageAssetManager\AssetManager.csproj">
       <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
-      <Name>RageAssetManager</Name>
+      <Name>AssetManager</Name>
     </ProjectReference>
     <ProjectReference Include="..\EmotionDetectionAsset\EmotionDetectionAsset.csproj">
       <Project>{4d1f98c7-6827-4f99-b676-f5c9af632609}</Project>

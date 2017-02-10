@@ -55,9 +55,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManager\RageAssetManager\RageAssetManager.csproj">
+    <ProjectReference Include="..\..\AssetManager\RageAssetManager\AssetManager.csproj">
       <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
-      <Name>RageAssetManager</Name>
+      <Name>AssetManager</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
