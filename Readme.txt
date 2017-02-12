@@ -9,7 +9,7 @@ Task: T2.3 of the RAGE project. The project website is http://rageproject.eu.
 For any questions please contact: 
 
 Kiavash Bahreini via kiavash.bahreini [AT] ou [DOT] nl
-and/or 
+and/or
 Wim van der Vegt via wim.vandervegt [AT] ou [DOT] nl
 
 The solution consists of seven projects:

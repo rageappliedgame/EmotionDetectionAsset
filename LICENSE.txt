@@ -10,7 +10,7 @@
  * For any questions please contact: 
  *
  * Kiavash Bahreini via kiavash.bahreini [AT] ou [DOT] nl
- * and/or 
+ * and/or
  * Wim van der Vegt via wim.vandervegt [AT] ou [DOT] nl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
