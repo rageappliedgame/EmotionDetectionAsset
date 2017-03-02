@@ -34,6 +34,7 @@ namespace AssetPackage
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -554,7 +555,7 @@ namespace AssetPackage
                             if (m.Success)
                             {
                                 expression.Emotion = m.Groups["emotion"].Value;
-                                expression.CF = Double.Parse(m.Groups["cf"].Value);
+                                expression.CF = Double.Parse(m.Groups["cf"].Value, CultureInfo.InvariantCulture);
                             }
                         }
                     }
@@ -584,7 +585,7 @@ namespace AssetPackage
 
                                     //! ____/----\____
 
-                                    fuzzy.var = Int32.Parse(m.Groups["var"].Value.TrimStart('V'));
+                                    fuzzy.var = Int32.Parse(m.Groups["var"].Value.TrimStart('V'), CultureInfo.InvariantCulture);
                                     fuzzy.lsb = ParseNumber(m, "lsb", Double.NegativeInfinity);
                                     fuzzy.lst = ParseNumber(m, "lst", Double.NegativeInfinity);
                                     fuzzy.rst = ParseNumber(m, "rst", Double.PositiveInfinity);
@@ -819,7 +820,7 @@ namespace AssetPackage
         /// </returns>
         private static Double ParseNumber(Match m, String grp, Double def)
         {
-            return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value);
+            return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>

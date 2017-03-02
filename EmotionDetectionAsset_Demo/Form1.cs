@@ -989,7 +989,7 @@ namespace dlib_csharp
             /// </returns>
             public override string ToString()
             {
-                return string.Format(System.Globalization.CultureInfo.CurrentCulture, "{{X={0},Y={1}}}", X, Y);
+                return string.Format(CultureInfo.CurrentCulture, "{{X={0},Y={1}}}", X, Y);
             }
 
             #endregion Methods
@@ -1194,7 +1194,7 @@ namespace dlib_csharp
             /// </returns>
             public override string ToString()
             {
-                return string.Format(System.Globalization.CultureInfo.CurrentCulture, "{{Left={0},Top={1},Right={2},Bottom={3}}}", Left, Top, Right, Bottom);
+                return string.Format(CultureInfo.CurrentCulture, "{{Left={0},Top={1},Right={2},Bottom={3}}}", Left, Top, Right, Bottom);
             }
 
             #endregion Methods
