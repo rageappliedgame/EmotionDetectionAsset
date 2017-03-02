@@ -28,7 +28,7 @@ namespace dlib_csharp
     {
         public void Log(Severity severity, string msg)
         {
-            if (severity != Severity.Verbose)
+            //if (severity != Severity.Verbose)
             {
                 Debug.WriteLine(msg);
             }

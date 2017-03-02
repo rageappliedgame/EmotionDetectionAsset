@@ -22,9 +22,10 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -64,10 +65,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\build\Release\dlibwrapper.dll">
-      <Link>dlibwrapper.dll</Link>
+    <Content Include="..\build\Release\dlibwrapper_x86.dll">
+      <Link>dlibwrapper_x86.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\database\FURIA Fuzzy Logic Rules.txt">
+    <Content Include="..\build\Release\dlibwrapper_x64.dll">
+      <Link>dlibwrapper_x64.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\data\FURIA Fuzzy Logic Rules.txt">
       <Link>FURIA Fuzzy Logic Rules.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -77,7 +83,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\database\shape_predictor_68_face_landmarks.dat">
+    <None Include="..\data\shape_predictor_68_face_landmarks.dat">
       <Link>shape_predictor_68_face_landmarks.dat</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

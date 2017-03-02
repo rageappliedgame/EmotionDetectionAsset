@@ -152,7 +152,7 @@
             set;
         }
 
-#warning FIR paramaters.
+//#warning FIR parameters.
 
 #warning Dlib wrapper filename (if we dynload it).
 
