@@ -102,7 +102,7 @@ namespace EmotionDetectionAsset_Test
             // https://msdn.microsoft.com/en-us/library/vs/alm/dd183402(v=vs.85).aspx
             // 
 
-            eda.Initialize(@".\shape_predictor_68_face_landmarks.dat");
+            eda.Initialize(@".", "shape_predictor_68_face_landmarks.dat");
 
             eda.ParseRules(File.ReadAllLines(@".\FURIA Fuzzy Logic Rules.txt"));
 

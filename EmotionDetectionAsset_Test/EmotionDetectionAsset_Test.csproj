@@ -55,20 +55,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManager\RageAssetManager\AssetManager.csproj">
-      <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
-      <Name>AssetManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EmotionDetectionAsset\EmotionDetectionAsset.csproj">
-      <Project>{4d1f98c7-6827-4f99-b676-f5c9af632609}</Project>
-      <Name>EmotionDetectionAsset</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\build\Release\dlibwrapper.dll">
-      <Link>dlibwrapper.dll</Link>
+    <Content Include="..\build\Release\dlibwrapper_x64.dll">
+      <Link>dlibwrapper_x64.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\database\FURIA Fuzzy Logic Rules.txt">
+    <Content Include="..\build\Release\dlibwrapper_x86.dll">
+      <Link>dlibwrapper_x86.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\data\FURIA Fuzzy Logic Rules.txt">
       <Link>FURIA Fuzzy Logic Rules.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -78,10 +73,20 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\database\shape_predictor_68_face_landmarks.dat">
+    <None Include="..\data\shape_predictor_68_face_landmarks.dat">
       <Link>shape_predictor_68_face_landmarks.dat</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\..\Rage\AssetManager\RageAssetManager\RageAssetManager.csproj">
+      <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
+      <Name>RageAssetManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EmotionDetectionAsset\EmotionDetectionAsset.csproj">
+      <Project>{4d1f98c7-6827-4f99-b676-f5c9af632609}</Project>
+      <Name>EmotionDetectionAsset</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

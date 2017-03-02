@@ -38,6 +38,7 @@ namespace dlib_csharp
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
+    using System.Threading;
     using System.Windows.Forms;
     using System.Windows.Forms.DataVisualization.Charting;
 
@@ -52,15 +53,21 @@ namespace dlib_csharp
     using OfficeOpenXml;
     using OfficeOpenXml.Style;
     using System.Globalization;
+
     public partial class Form1 : Form
     {
         #region Fields
-        const String CKPlusPlath = @"..\..\..\data\CK+";
-        const String database = @"..\..\..\data\shape_predictor_68_face_landmarks.dat";
-        const String face1 = @"..\..\..\faces\franck_02159.bmp";
-        const String fuzzy = @"..\..\..\data\FURIA Fuzzy Logic Rules.txt";
-        const String face2 = @"..\..\..\faces\franck_02159m.bmp";
-        const String wrapper =  @"dlibwrapper.dll";
+        const String CKPlusPlath = @"C:\Virtual Machines\CK+";
+        const String database = @".\shape_predictor_68_face_landmarks.dat";
+        //const String face1 = @"..\..\..\testinput\franck_02159.bmp";
+        //const String face2 = @"..\..\..\testinput\franck_02159m.bmp";
+        const String face3 = @".\Kiavash1.jpg";
+#if WIN64
+        const String wrapper = @".\dlibwrapper_x64.dll";
+#else
+        const String wrapper = @".\dlibwrapper.dll";
+#endif
+        const String furia = @".\FURIA Fuzzy Logic Rules.txt";
 
         Boolean busy = false;
         Int32 counter = 0;
@@ -95,64 +102,64 @@ namespace dlib_csharp
 
         #region Methods
 
-        /// <summary>
-        /// Detect faces.
-        /// </summary>
-        ///
-        /// <param name="img">          The image. </param>
-        /// <param name="length">       The length. </param>
-        /// <param name="faces">        [out] The faces. </param>
-        /// <param name="facecount">    [out] The facecount. </param>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "DetectFaces",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        public static extern void DetectFaces(
-            [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
-            Int32 length,
-            out IntPtr faces,
-            out int facecount);
+        ///// <summary>
+        ///// Detect faces.
+        ///// </summary>
+        /////
+        ///// <param name="img">          The image. </param>
+        ///// <param name="length">       The length. </param>
+        ///// <param name="faces">        [out] The faces. </param>
+        ///// <param name="facecount">    [out] The facecount. </param>
+        //[DllImport(wrapper,
+        //    CharSet = CharSet.Auto,
+        //    EntryPoint = "DetectFaces",
+        //    SetLastError = true,
+        //    CallingConvention = CallingConvention.Cdecl)]
+        //public static extern void DetectFaces(
+        //    [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
+        //    Int32 length,
+        //    out IntPtr faces,
+        //    out int facecount);
 
-        /// <summary>
-        /// Detect landmarks.
-        /// </summary>
-        ///
-        /// <param name="face">         The face. </param>
-        /// <param name="landmarks">    [out] The landmarks. </param>
-        /// <param name="markcount">    [out] The markcount. </param>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "DetectLandmarks",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        public static extern void DetectLandmarks(RECT face, out IntPtr landmarks, out int markcount);
+        ///// <summary>
+        ///// Detect landmarks.
+        ///// </summary>
+        /////
+        ///// <param name="face">         The face. </param>
+        ///// <param name="landmarks">    [out] The landmarks. </param>
+        ///// <param name="markcount">    [out] The markcount. </param>
+        //[DllImport(wrapper,
+        //    CharSet = CharSet.Auto,
+        //    EntryPoint = "DetectLandmarks",
+        //    SetLastError = true,
+        //    CallingConvention = CallingConvention.Cdecl)]
+        //public static extern void DetectLandmarks(RECT face, out IntPtr landmarks, out int markcount);
 
-        /// <summary>
-        /// Init database.
-        /// </summary>
-        ///
-        /// <param name="lpFileName">   Filename of the file. </param>
-        ///
-        /// <returns>
-        /// An int.
-        /// </returns>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "InitDatabase",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        public static extern int InitDatabase([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+        ///// <summary>
+        ///// Init database.
+        ///// </summary>
+        /////
+        ///// <param name="lpFileName">   Filename of the file. </param>
+        /////
+        ///// <returns>
+        ///// An int.
+        ///// </returns>
+        //[DllImport(wrapper,
+        //    CharSet = CharSet.Auto,
+        //    EntryPoint = "InitDatabase",
+        //    SetLastError = true,
+        //    CallingConvention = CallingConvention.Cdecl)]
+        //public static extern int InitDatabase([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
 
-        /// <summary>
-        /// Init detector.
-        /// </summary>
-        [DllImport(wrapper,
-            CharSet = CharSet.Auto,
-            EntryPoint = "InitDetector",
-            SetLastError = true,
-            CallingConvention = CallingConvention.Cdecl)]
-        public static extern void InitDetector();
+        ///// <summary>
+        ///// Init detector.
+        ///// </summary>
+        //[DllImport(wrapper,
+        //    CharSet = CharSet.Auto,
+        //    EntryPoint = "InitDetector",
+        //    SetLastError = true,
+        //    CallingConvention = CallingConvention.Cdecl)]
+        //public static extern void InitDetector();
 
         /// <summary>
         /// Draw faces and landmarks.
@@ -174,7 +181,7 @@ namespace dlib_csharp
                     //! Face Id
                     // .
                     g.DrawString(
-                        String.Format("face: {0}", cnt++),
+                        String.Format("Face_{0}", cnt++),
                         new Font(FontFamily.GenericSansSerif, 10.0f, FontStyle.Bold),
                         new SolidBrush(Color.Yellow),
                         new PointF(kvp.Key.Left, kvp.Key.Top));
@@ -229,20 +236,21 @@ namespace dlib_csharp
         ///
         /// <param name="sender">   Source of the event. </param>
         /// <param name="e">        Event information. </param>
+        [Obsolete]
         private void button1_Click(object sender, EventArgs e)
         {
-            Debug.Print(String.Empty);
+            //Debug.Print(String.Empty);
 
-            using (Timing t = new Timing("Initialize"))
-            {
-                InitDetector();
+            //using (Timing t = new Timing("Initialize"))
+            //{
+            //    InitDetector();
 
-                InitDatabase(database);
+            //    InitDatabase(database);
 
-                InitDatabase(database);
+            //    InitDatabase(database);
 
-                label1.Text = t.ElapsedMsg;
-            }
+            //    label1.Text = t.ElapsedMsg;
+            //}
 
             //! Has to be a BMP as dlib only supports reading BMP from a stream.
             //
@@ -257,11 +265,12 @@ namespace dlib_csharp
         [Obsolete]
         private void button2_Click(object sender, EventArgs e)
         {
-            Bitmap bmp = (Bitmap)Bitmap.FromFile(face2);
+            //Bitmap bmp = (Bitmap)Bitmap.FromFile(face3);
 
-            pictureBox1.Image = bmp;
+            //pictureBox1.Image = bmp;
 
-            DetectFacesInBitmap((Bitmap)pictureBox1.Image);
+            //DetectFacesInBitmap((Bitmap)pictureBox1.Image);
+            MessageBox.Show("Obsoleted");
         }
 
         /// <summary>
@@ -273,7 +282,9 @@ namespace dlib_csharp
         [Obsolete]
         private void button3_Click(object sender, EventArgs e)
         {
-            DetectLandmarksInFaces();
+            //DetectLandmarksInFaces();
+
+            MessageBox.Show("Obsoleted");
         }
 
         /// <summary>
@@ -312,25 +323,46 @@ namespace dlib_csharp
         }
 
         /// <summary>
-        /// Event handler. Called by button5 for click events.
+        /// Event handler.Called by button5 for click events.
         /// </summary>
         ///
-        /// <param name="sender">   Source of the event. </param>
+        /// <param name = "sender" > Source of the event. </param>
         /// <param name="e">        Event information. </param>
         private void button5_Click(object sender, EventArgs e)
         {
             InitChart();
 
-            pictureBox1.Image = Image.FromFile("Kiavash1.jpg");
+            //! Save both spike detection and averaging.
+            //
+            Int32 avg = (eda.Settings as EmotionDetectionAssetSettings).Average;
+            Boolean spike = (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes;
 
+            //(eda.Settings as EmotionDetectionAssetSettings).GrayScale = true;
+
+            //! Temporary switch of both spike detection and averaging.
+            //
+            (eda.Settings as EmotionDetectionAssetSettings).Average = 1;
+            (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = false;
+
+            pictureBox1.Image = Image.FromFile(face3);
+
+            // First pixel of Kiavash1.bmp
+            // R 229
+            // G 198
+            // B 154
             ProcessImageIntoEmotions(pictureBox1.Image, true);
+
+            //! Restore of both spike detection and averaging.
+            //
+            (eda.Settings as EmotionDetectionAssetSettings).Average = avg;
+            (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = spike;
         }
 
         /// <summary>
-        /// Event handler. Called by button6 for click events.
+        /// Event handler.Called by button6 for click events.
         /// </summary>
         ///
-        /// <param name="sender">   Source of the event. </param>
+        /// <param name = "sender" > Source of the event. </param>
         /// <param name="e">        Event information. </param>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -410,7 +442,7 @@ namespace dlib_csharp
                         //{
                         //    Debugger.Break();
                         //}
-                        // 
+                        //
                         //if (i == reader.FrameCount - 5)
                         //{
                         //    Debugger.Break();
@@ -461,7 +493,7 @@ namespace dlib_csharp
                             cofs = 1;
 
                             //! Dispose the frame when it is no longer required, but not the last frame.
-                            // 
+                            //
                             if (i < reader.FrameCount - 1)
                             {
                                 img.Dispose();
@@ -481,129 +513,129 @@ namespace dlib_csharp
             }
         }
 
-        /// <summary>
-        /// Detect faces in bitmap.
-        /// </summary>
-        ///
-        /// <param name="bmp">  The bitmap. </param>
-        [Obsolete]
-        private void DetectFacesInBitmap(Bitmap bmp)
-        {
-            Debug.Print("{0}", pictureBox1.Image.PixelFormat);
+        ///// <summary>
+        ///// Detect faces in bitmap.
+        ///// </summary>
+        /////
+        ///// <param name="bmp">  The bitmap. </param>
+        //[Obsolete]
+        //private void DetectFacesInBitmap(Bitmap bmp)
+        //{
+        //    Debug.Print("{0}", pictureBox1.Image.PixelFormat);
+        //
+        //    //Bitmap clone = new Bitmap(pictureBox1.Image.Width, pictureBox1.Image.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+        //    //using (Graphics gr = Graphics.FromImage(clone))
+        //    //{
+        //    //    gr.DrawImage(pictureBox1.Image, new Rectangle(0, 0, clone.Width, clone.Height));
+        //    //}
+        //
+        //    //! This is code to make sure dlib accepts the image.
+        //    //! Dlib's image_load.h / load_bmp() only supports 1,4,8 or 24 bits images (so no 16 or 32 bit ones).
+        //    //
+        //    Byte[] raw = (!supported.Contains(bmp.PixelFormat)) ?
+        //        bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format24bppRgb).ToByteArray() :
+        //        bmp.ToByteArray();
+        //
+        //    //http://stackoverflow.com/questions/209258/dllimport-int-how-to-do-this-if-it-can-be-done
+        //    //http://www.codeproject.com/Questions/187293/Interoperation-C-and-native-Win-C-code-arrays-of
+        //
+        //    using (Timing t = new Timing("DetectFaces"))
+        //    {
+        //        int facecount = 0;
+        //        IntPtr faces = IntPtr.Zero;
+        //
+        //        DetectFaces(raw, raw.Length, out faces, out facecount);
+        //
+        //        //Debug.Print("Detected: {0} face(s)", facecount);
+        //        //Debug.Print("SizeOf(RECT)={0}", Marshal.SizeOf(new RECT()));
+        //
+        //        Faces.Clear();
+        //
+        //        //RECT[] ManagedRectArray = new RECT[facecount];
+        //
+        //        if (facecount != 0)
+        //        {
+        //            IntPtr[] pIntPtrArray = new IntPtr[facecount];
+        //
+        //            Marshal.Copy(faces, pIntPtrArray, 0, facecount);
+        //
+        //            for (Int32 i = 0; i < facecount; i++)
+        //            {
+        //                Faces.Add((RECT)Marshal.PtrToStructure(pIntPtrArray[i], typeof(RECT)));
+        //
+        //                Marshal.FreeCoTaskMem(pIntPtrArray[i]);
+        //
+        //                Debug.Print("Face {0} @ {1}", i, Faces[i].ToString());
+        //            }
+        //
+        //            Marshal.FreeCoTaskMem(faces);
+        //        }
+        //
+        //        label1.Text = t.ElapsedMsg;
+        //    }
+        //
+        //    using (Graphics g1 = Graphics.FromImage(pictureBox1.Image))
+        //    {
+        //        foreach (RECT r in Faces)
+        //        {
+        //            g1.DrawRectangle(new Pen(new SolidBrush(Color.Black)), new Rectangle(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top));
+        //        }
+        //    }
+        //
+        //    this.Refresh();
+        //}
 
-            //Bitmap clone = new Bitmap(pictureBox1.Image.Width, pictureBox1.Image.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-            //using (Graphics gr = Graphics.FromImage(clone))
-            //{
-            //    gr.DrawImage(pictureBox1.Image, new Rectangle(0, 0, clone.Width, clone.Height));
-            //}
+        ///// <summary>
+        ///// (This method is obsolete) detect landmarks in faces.
+        ///// </summary>
+        //[Obsolete]
+        //private void DetectLandmarksInFaces()
+        //{
+        //    foreach (RECT r in Faces)
+        //    {
+        //        using (Timing t = new Timing("DetectFaces"))
+        //        {
+        //            int markcount = 0;
+        //            IntPtr landmarks = IntPtr.Zero;
+        //
+        //            eda.DetectLandmarks(r, out landmarks, out markcount);
 
-            //! This is code to make sure dlib accepts the image.
-            //! Dlib's image_load.h / load_bmp() only supports 1,4,8 or 24 bits images (so no 16 or 32 bit ones).
-            //
-            Byte[] raw = (!supported.Contains(bmp.PixelFormat)) ?
-                bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format24bppRgb).ToByteArray() :
-                bmp.ToByteArray();
+        //            //Debug.Print("Detected: {0} Landmark Part(s)", markcount);
+        //            //Debug.Print("SizeOf(POINT)={0}", Marshal.SizeOf(new POINT()));
 
-            //http://stackoverflow.com/questions/209258/dllimport-int-how-to-do-this-if-it-can-be-done
-            //http://www.codeproject.com/Questions/187293/Interoperation-C-and-native-Win-C-code-arrays-of
+        //            Landmarks.Clear();
 
-            using (Timing t = new Timing("DetectFaces"))
-            {
-                int facecount = 0;
-                IntPtr faces = IntPtr.Zero;
+        //            //POINT[] ManagedPointArray = new POINT[markcount];
 
-                DetectFaces(raw, raw.Length, out faces, out facecount);
+        //            IntPtr[] pIntPtrArray = new IntPtr[markcount];
 
-                //Debug.Print("Detected: {0} face(s)", facecount);
-                //Debug.Print("SizeOf(RECT)={0}", Marshal.SizeOf(new RECT()));
+        //            Marshal.Copy(landmarks, pIntPtrArray, 0, markcount);
 
-                Faces.Clear();
+        //            for (Int32 i = 0; i < markcount; i++)
+        //            {
+        //                Landmarks.Add((POINT)Marshal.PtrToStructure(pIntPtrArray[i], typeof(POINT)));
 
-                //RECT[] ManagedRectArray = new RECT[facecount];
+        //                Marshal.FreeCoTaskMem(pIntPtrArray[i]);
 
-                if (facecount != 0)
-                {
-                    IntPtr[] pIntPtrArray = new IntPtr[facecount];
+        //                // Debug.Print("Landmark Point {0} @ {1}", i, Landmarks[i].ToString());
+        //            }
 
-                    Marshal.Copy(faces, pIntPtrArray, 0, facecount);
+        //            Marshal.FreeCoTaskMem(landmarks);
 
-                    for (Int32 i = 0; i < facecount; i++)
-                    {
-                        Faces.Add((RECT)Marshal.PtrToStructure(pIntPtrArray[i], typeof(RECT)));
+        //            label1.Text = t.ElapsedMsg;
+        //        }
 
-                        Marshal.FreeCoTaskMem(pIntPtrArray[i]);
+        //        using (Graphics g1 = Graphics.FromImage(pictureBox1.Image))
+        //        {
+        //            foreach (Point p in Landmarks)
+        //            {
+        //                g1.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
+        //            }
+        //        }
+        //    }
 
-                        Debug.Print("Face {0} @ {1}", i, Faces[i].ToString());
-                    }
-
-                    Marshal.FreeCoTaskMem(faces);
-                }
-
-                label1.Text = t.ElapsedMsg;
-            }
-
-            using (Graphics g1 = Graphics.FromImage(pictureBox1.Image))
-            {
-                foreach (RECT r in Faces)
-                {
-                    g1.DrawRectangle(new Pen(new SolidBrush(Color.Black)), new Rectangle(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top));
-                }
-            }
-
-            this.Refresh();
-        }
-
-        /// <summary>
-        /// (This method is obsolete) detect landmarks in faces.
-        /// </summary>
-        [Obsolete]
-        private void DetectLandmarksInFaces()
-        {
-            foreach (RECT r in Faces)
-            {
-                using (Timing t = new Timing("DetectFaces"))
-                {
-                    int markcount = 0;
-                    IntPtr landmarks = IntPtr.Zero;
-
-                    DetectLandmarks(r, out landmarks, out markcount);
-
-                    //Debug.Print("Detected: {0} Landmark Part(s)", markcount);
-                    //Debug.Print("SizeOf(POINT)={0}", Marshal.SizeOf(new POINT()));
-
-                    Landmarks.Clear();
-
-                    //POINT[] ManagedPointArray = new POINT[markcount];
-
-                    IntPtr[] pIntPtrArray = new IntPtr[markcount];
-
-                    Marshal.Copy(landmarks, pIntPtrArray, 0, markcount);
-
-                    for (Int32 i = 0; i < markcount; i++)
-                    {
-                        Landmarks.Add((POINT)Marshal.PtrToStructure(pIntPtrArray[i], typeof(POINT)));
-
-                        Marshal.FreeCoTaskMem(pIntPtrArray[i]);
-
-                        // Debug.Print("Landmark Point {0} @ {1}", i, Landmarks[i].ToString());
-                    }
-
-                    Marshal.FreeCoTaskMem(landmarks);
-
-                    label1.Text = t.ElapsedMsg;
-                }
-
-                using (Graphics g1 = Graphics.FromImage(pictureBox1.Image))
-                {
-                    foreach (Point p in Landmarks)
-                    {
-                        g1.FillRectangle(new SolidBrush(Color.Red), new Rectangle(p.X - 1, p.Y - 1, 3, 3));
-                    }
-                }
-            }
-
-            this.Refresh();
-        }
+        //    this.Refresh();
+        //}
 
         /// <summary>
         /// Handler, called when the emotion update event.
@@ -676,9 +708,9 @@ namespace dlib_csharp
 
             AssetManager.Instance.Bridge = new Bridge();
 
-            eda.Initialize(Path.GetFullPath(database));
+            eda.Initialize(@".\", database);
 
-            eda.ParseRules(File.ReadAllLines(fuzzy));
+            eda.ParseRules(File.ReadAllLines(furia));
 
             (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = true;
 
@@ -714,6 +746,12 @@ namespace dlib_csharp
             }
         }
 
+        /// <summary>
+        /// Process the image into emotions.
+        /// </summary>
+        ///
+        /// <param name="img">      The image. </param>
+        /// <param name="redetect"> True to redetect. </param>
         private void ProcessImageIntoEmotions(Image img, Boolean redetect)
         {
             //! Skipping does not seem to work properly
@@ -797,7 +835,7 @@ namespace dlib_csharp
 
                         for (Int32 i = 1; i < listView1.Columns.Count; i++)
                         {
-                            listView1.Columns[i].Text = String.Format("Face_{0}", i);
+                            listView1.Columns[i].Text = String.Format("Face_{0}", i - 1);
                         }
                     }
 
@@ -1259,9 +1297,10 @@ namespace dlib_csharp
                 {
                     if (!ze.IsDirectory)
                     {
-                        if (File.Exists(Path.Combine(@".\CKplus",
-                            String.Format("{0}_emotion.txt",
-                            Path.GetFileNameWithoutExtension(ze.FileName)))))
+                        String tag = Path.Combine(@".\CKplus",
+    String.Format("{0}_emotion.txt", Path.GetFileNameWithoutExtension(ze.FileName)));
+
+                        if (File.Exists(tag))
                         {
                             using (FileStream fs = new FileStream(
                                 Path.Combine(@".\CKplus", Path.GetFileName(ze.FileName)),
@@ -1274,11 +1313,37 @@ namespace dlib_csharp
                     }
                 }
             }
+
+            using (ZipFile zip = new ZipFile(Path.Combine(CKPlusPlath, "extended-cohn-kanade-images.zip")))
+            {
+                foreach (ZipEntry ze in zip)
+                {
+                    if (!ze.IsDirectory)
+                    {
+                        String tag = Path.Combine(@".\CKplus",
+                            String.Format("{0}_emotion.txt", Path.GetFileNameWithoutExtension(ze.FileName)));
+
+                        if (!File.Exists(tag) &&
+                            Path.GetFileNameWithoutExtension(ze.FileName).EndsWith("_00000001"))
+                        {
+                            using (FileStream fs = new FileStream(
+                                Path.Combine(@".\CKplus", Path.GetFileName(ze.FileName)),
+                                FileMode.Create))
+                            {
+                                ze.Extract(fs);
+                                fs.Close();
+                            }
+
+                            File.WriteAllText(tag, "0");
+                        }
+                    }
+                }
+            }
         }
 
         private void button8_Click(object sender, EventArgs e)
         {
-            //! Temporary switch of both spike detection and averaging.
+            //! Save both spike detection and averaging.
             // 
             Int32 avg = (eda.Settings as EmotionDetectionAssetSettings).Average;
             Boolean spike = (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes;
@@ -1296,6 +1361,8 @@ namespace dlib_csharp
             cnts.Add("Sad", 0);            //Sadness in CK+ documentation
             cnts.Add("Surprise", 0);
 
+            //! Temporary switch of both spike detection and averaging.
+            // 
             (eda.Settings as EmotionDetectionAssetSettings).Average = 1;
             (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = false;
 
@@ -1355,6 +1422,9 @@ namespace dlib_csharp
                     ws1.Cells[rofs, cofs++].Value = emotion;
 
                     ProcessImageIntoEmotions(pictureBox1.Image, true);
+
+                    Application.DoEvents();
+                    Thread.Sleep(0);
 
                     //for (Int32 j = 0; j < eda.Faces.Count; j++)
                     if (eda.Faces.Count > 0)
@@ -1421,7 +1491,7 @@ namespace dlib_csharp
 
                     String fmt = String.Format("={0}{1}/{2}{1}", "C", rofs, "B");
                     ws2.Cells[rofs, cofs++].Formula = fmt;
-                    ws2.Cells[rofs, cofs-1].Style.Numberformat.Format = "#%";
+                    ws2.Cells[rofs, cofs - 1].Style.Numberformat.Format = "#%";
                 }
                 package.Save();
             }
@@ -1456,6 +1526,5 @@ namespace dlib_csharp
 
             return "error";
         }
-
     }
 }

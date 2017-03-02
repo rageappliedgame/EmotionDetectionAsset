@@ -46,8 +46,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\build\Release\dlibwrapper.dll">
-      <Link>dlibwrapper.dll</Link>
+    <Content Include="..\build\Release\dlibwrapper_x64.dll">
+      <Link>dlibwrapper_x64.dll</Link>
+    </Content>
+    <Content Include="..\build\Release\dlibwrapper_x86.dll">
+      <Link>dlibwrapper_x86.dll</Link>
     </Content>
     <Content Include="..\database\FURIA Fuzzy Logic Rules.txt">
       <Link>FURIA Fuzzy Logic Rules.txt</Link>
@@ -68,8 +71,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManager\RageAssetManager_Portable\RageAssetManager - Portable.csproj">
-      <Project>{7f2712c1-575c-4883-88aa-e5b31070354f}</Project>
+    <ProjectReference Include="..\..\..\..\..\..\..\Rage\AssetManager\RageAssetManager_Portable\RageAssetManager - Portable.csproj">
+      <Project>{024aab6f-56ce-4295-94e7-f7177c918e39}</Project>
       <Name>RageAssetManager - Portable</Name>
     </ProjectReference>
   </ItemGroup>

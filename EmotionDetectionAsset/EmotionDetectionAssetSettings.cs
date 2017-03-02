@@ -164,11 +164,11 @@ namespace AssetPackage
             set;
         }
 
-#warning FIR paramaters.
+//#warning FIR paramaters.
 
-#warning Dlib wrapper filename (if we dynload it).
+//#warning Dlib wrapper filename (if we dynload it).
 
-#warning Scaled etcs (basic image pre-processing).
+//#warning Scaled etcs (basic image pre-processing).
 
         #endregion Properties
     }

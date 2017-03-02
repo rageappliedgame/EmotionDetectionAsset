@@ -50,14 +50,17 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\build\Release\dlibwrapper.dll">
-      <Link>dlibwrapper.dll</Link>
+    <Content Include="..\build\Release\dlibwrapper_x64.dll">
+      <Link>dlibwrapper_x64.dll</Link>
+    </Content>
+    <Content Include="..\build\Release\dlibwrapper_x86.dll">
+      <Link>dlibwrapper_x86.dll</Link>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManager\RageAssetManager\AssetManager.csproj">
+    <ProjectReference Include="..\..\..\..\..\..\..\Rage\AssetManager\RageAssetManager\RageAssetManager.csproj">
       <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
-      <Name>AssetManager</Name>
+      <Name>RageAssetManager</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

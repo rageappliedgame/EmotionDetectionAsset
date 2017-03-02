@@ -34,6 +34,7 @@ namespace AssetPackage
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
+    using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
@@ -74,7 +75,7 @@ namespace AssetPackage
     /// The Value is a list of 68 landmark points.
     /// </summary>
     using DetectedFaces = System.Collections.Generic.Dictionary<EmotionDetectionAsset.RECT, System.Collections.Generic.List<EmotionDetectionAsset.POINT>>;
-    using System.Globalization;
+
     /// <summary>
     /// An asset.
     /// </summary>
@@ -206,9 +207,14 @@ namespace AssetPackage
            };
 
         /// <summary>
-        /// Hardcoded value for now.
+        /// The 64 bits wrapper.
         /// </summary>
-        const String wrapper = @"dlibwrapper.dll";
+        public static String wrapper64 = @"dlibwrapper_x64.dll";
+
+        /// <summary>
+        /// The 32 bits wrapper.
+        /// </summary>
+        public static String wrapper32 = @"dlibwrapper_x86.dll";
 
         /// <summary>
         /// The first regex used to parse the left part of FURIA fuzzy rules.
@@ -356,7 +362,7 @@ namespace AssetPackage
                     }
                     else
                     {
-                        Log(Severity.Verbose, "Avg Count: {0}", EmotionsHistory[face].Select(p => p[emotion]).Count());
+                        //Log(Severity.Verbose, "Avg Count: {0}", EmotionsHistory[face].Select(p => p[emotion]).Count());
                         return EmotionsHistory[face].Select(p => p[emotion]).Average();
                     }
                 }
@@ -498,12 +504,19 @@ namespace AssetPackage
         /// Initializes the dlib wrapper and face detection.
         /// </summary>
         ///
+        /// <param name="dllPath">  Full pathname of the DLL file. </param>
         /// <param name="database"> The database. </param>
-        public void Initialize(String database)
+        public void Initialize(String dllPath, String database)
         {
+            // Load the appropriate dll (x86 or x64) depending on the CPU/OS version. 
+            // 
+            DlibWrapper.LoadWrapper(this, dllPath);
+
+            // Init the Dlib Face Detection. 
+            // 
             DlibWrapper.InitDetector();
 
-            //! Init twice or we do not see any faces detected. Reason not known, need to debug this.
+            //! Init the DLib Landmark Detection twice or we do not see any faces detected. Reason not known, need to debug this.
             //
             DlibWrapper.InitDatabase(database);
             DlibWrapper.InitDatabase(database);
@@ -541,7 +554,7 @@ namespace AssetPackage
                             if (m.Success)
                             {
                                 expression.Emotion = m.Groups["emotion"].Value;
-                                expression.CF = Double.Parse(m.Groups["cf"].Value,CultureInfo.InvariantCulture);
+                                expression.CF = Double.Parse(m.Groups["cf"].Value);
                             }
                         }
                     }
@@ -663,6 +676,32 @@ namespace AssetPackage
         /// Process the image described by bmp into zero or more faces.
         /// </summary>
         ///
+        /// <param name="bmp">      The bitmap. </param>
+        /// <param name="width">    The width. </param>
+        /// <param name="height">   The height. </param>
+        /// <param name="flip">     (Optional) True to flip. </param>
+        ///
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public Boolean ProcessImage(Byte[] bmp, Int32 width, Int32 height, Boolean flip = false)
+        {
+            Faces.Clear();
+
+#warning add additional checks on format & size.
+
+            if (DlibWrapper.SetImageToRGBA(bmp, width, height, flip))
+            {
+                DetectFacesInImage();
+            }
+
+            return Faces.Count != 0;
+        }
+
+        /// <summary>
+        /// Process the image described by bmp into zero or more faces.
+        /// </summary>
+        ///
         /// <param name="bmp">  The bitmap. </param>
         ///
         /// <returns>
@@ -670,12 +709,87 @@ namespace AssetPackage
         /// </returns>
         public Boolean ProcessImage(Image bmp)
         {
+            Faces.Clear();
+
             if (!supported.Contains(bmp.PixelFormat))
             {
                 Log(Severity.Warning, "Unsupported PixelFormat {0}, will need conversion", bmp.PixelFormat);
             }
 
-            DetectFacesInBitmap(bmp);
+            //Bitmap clone = new Bitmap(pictureBox1.Image.Width, pictureBox1.Image.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            //using (Graphics gr = Graphics.FromImage(clone))
+            //{
+            //    gr.DrawImage(pictureBox1.Image, new Rectangle(0, 0, clone.Width, clone.Height));
+            //}
+
+            //! This is code to make sure dlib accepts the image.
+            //! Dlib's image_load.h / load_bmp() only supports 1,4,8 or 24 bits images (so no 16 or 32 bit ones).
+            Boolean gray = ((EmotionDetectionAssetSettings)settings).GrayScale;
+
+            // GrayScale() returns PixelFormat.Format32bppArgb
+            bmp = gray ? bmp.GrayScale() : bmp;
+
+            Byte[] raw = !supported.Contains(bmp.PixelFormat)
+                ? ((Bitmap)bmp).Clone(
+                    new Rectangle(0, 0, bmp.Width, bmp.Height),
+                    PixelFormat.Format24bppRgb).ToByteArray()
+                : ((Bitmap)bmp).ToByteArray();
+
+#warning TEST CODE New Exported Methods
+
+            // See https://msdn.microsoft.com/en-us/library/5ey6h79d(v=vs.110).aspx
+
+            //! 1) Lock the bitmap's bits.  
+            Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+
+            BitmapData bmpData =
+             ((Bitmap)bmp).LockBits(rect, ImageLockMode.ReadOnly,
+                bmp.PixelFormat);
+
+            //! 2) Get the address of the first line.
+            IntPtr ptr = bmpData.Scan0;
+
+            //! 3) Declare an array to hold the bytes of the bitmap.
+            int bytes = Math.Abs(bmpData.Stride) * bmp.Height;
+            raw = new byte[bytes];
+
+            //! 4) Copy the RGB values into the array.
+            Marshal.Copy(ptr, raw, 0, bytes);
+
+            //! 5) Unlock the bits.
+            ((Bitmap)bmp).UnlockBits(bmpData);
+
+#warning DEBUG CODE
+
+            Color pixel = ((Bitmap)bmp).GetPixel(0, 0);
+
+            // ARGB [255] 229 198 154 Format24bppRgb
+            Log(Severity.Verbose, "ARGB [{0}] {1} {2} {3} {4}", pixel.A, pixel.R, pixel.G, pixel.B, bmp.PixelFormat.ToString());
+
+            //DlibWrapper.SetImageToBmp(raw, raw.Length);
+
+#warning This code must be more versatile to support more formats
+
+            // See https://msdn.microsoft.com/en-us/library/system.drawing.imaging.pixelformat(v=vs.110).aspx
+
+            if (bmp.PixelFormat == PixelFormat.Format32bppPArgb || bmp.PixelFormat == PixelFormat.Format32bppArgb)
+            {
+                // No need to flip Image.
+                // 
+                if (DlibWrapper.SetImageToRGBA(raw, bmp.Width, bmp.Height, false))
+                {
+                    DetectFacesInImage();
+                }
+            }
+            else
+            {
+                // No need to flip Image.
+                // 
+                if (DlibWrapper.SetImageToRGB(raw, bmp.Width, bmp.Height, false))
+                {
+                    DetectFacesInImage();
+                }
+            }
 
             return Faces.Count != 0;
         }
@@ -705,7 +819,7 @@ namespace AssetPackage
         /// </returns>
         private static Double ParseNumber(Match m, String grp, Double def)
         {
-            return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value, CultureInfo.InvariantCulture);
+            return m.Groups[grp].Value.EndsWith("inf") ? def : Double.Parse(m.Groups[grp].Value);
         }
 
         /// <summary>
@@ -761,38 +875,12 @@ namespace AssetPackage
             return ((Math.Pow(a, 2) + Math.Pow(b, 2) - Math.Pow(c, 2)) / (2 * a * b));
         }
 
-        /// <summary>
-        /// Detect faces in bitmap.
-        /// </summary>
-        ///
-        /// <param name="bmp">  The bitmap. </param>
-        private void DetectFacesInBitmap(Image bmp)
+        private void DetectFacesInImage()
         {
-            //Bitmap clone = new Bitmap(pictureBox1.Image.Width, pictureBox1.Image.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-            //using (Graphics gr = Graphics.FromImage(clone))
-            //{
-            //    gr.DrawImage(pictureBox1.Image, new Rectangle(0, 0, clone.Width, clone.Height));
-            //}
-
-            //! This is code to make sure dlib accepts the image.
-            //! Dlib's image_load.h / load_bmp() only supports 1,4,8 or 24 bits images (so no 16 or 32 bit ones).
-            Boolean gray = ((EmotionDetectionAssetSettings)settings).GrayScale;
-
-            bmp = gray ? bmp.GrayScale() : bmp;
-
-            Byte[] raw = !supported.Contains(bmp.PixelFormat)
-                ? ((Bitmap)bmp).Clone(
-                    new Rectangle(0, 0, bmp.Width, bmp.Height),
-                    PixelFormat.Format24bppRgb).ToByteArray()
-                : ((Bitmap)bmp).ToByteArray();
-
-            //http://stackoverflow.com/questions/209258/dllimport-int-how-to-do-this-if-it-can-be-done
-            //http://www.codeproject.com/Questions/187293/Interoperation-C-and-native-Win-C-code-arrays-of
-
             int facecount = 0;
             IntPtr faces = IntPtr.Zero;
 
-            DlibWrapper.DetectFaces(raw, raw.Length, out faces, out facecount);
+            DlibWrapper.DetectFaces(out faces, out facecount);
 
             Faces.Clear();
 
@@ -1135,7 +1223,257 @@ namespace AssetPackage
         /// </summary>
         protected static class DlibWrapper
         {
+            /// <summary>
+            /// Loads a library.
+            /// </summary>
+            ///
+            /// <param name="fileName"> Filename of the file. </param>
+            ///
+            /// <returns>
+            /// The library.
+            /// </returns>
+            [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+            private static extern IntPtr LoadLibrary(string fileName);
+
+            /// <summary>
+            /// Gets proc address.
+            /// </summary>
+            ///
+            /// <param name="hModule">  The module. </param>
+            /// <param name="procName"> Name of the proc. </param>
+            ///
+            /// <returns>
+            /// The proc address.
+            /// </returns>
+            [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+            private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+            /// <summary>
+            /// The detect landmarks.
+            /// </summary>
+            internal static DetectLandmarksDelegate DetectLandmarks = null;
+
+            /// <summary>
+            /// The set image to bitmap.
+            /// </summary>
+            internal static SetImageToBmpDelegate SetImageToBmp = null;
+
+            /// <summary>
+            /// The set image to RGB.
+            /// </summary>
+            internal static SetImageToRGBDelegate SetImageToRGB = null;
+
+            /// <summary>
+            /// The set image to RGBA.
+            /// </summary>
+            internal static SetImageToRGBADelegate SetImageToRGBA = null;
+
+            /// <summary>
+            /// The detect faces.
+            /// </summary>
+            internal static DetectFacesDelegate DetectFaces = null;
+
+            /// <summary>
+            /// The detect faces.
+            /// </summary>
+            [Obsolete]
+            internal static DetectFacesOldDelegate DetectFacesOld = null;
+
+            /// <summary>
+            /// The init database.
+            /// </summary>
+            internal static InitDatabaseDelegate InitDatabase = null;
+
+            /// <summary>
+            /// The init detector.
+            /// </summary>
+            internal static InitDetectorDelagate InitDetector = null;
+
+            /// <summary>
+            /// Handle of the wrapper DLL.
+            /// </summary>
+            private static IntPtr wrapperDllHandle = IntPtr.Zero;
+
+            /// <summary>
+            /// Gets a value indicating whether this object is 64 bit process.
+            /// </summary>
+            ///
+            /// <value>
+            /// True if this object is 64 bit process, false if not.
+            /// </value>
+            private static Boolean Is64BitProcess
+            {
+                get
+                {
+                    // Supresses dead code warning and Environment.Is64BitProcess is not supported by .Net 3.5. 
+                    // 
+                    return IntPtr.Size == 8;
+                }
+            }
+
+            /// <summary>
+            /// Loads a wrapper.
+            /// </summary>
+            ///
+            /// <param name="eda">      The eda. </param>
+            /// <param name="dllPath">  Full pathname of the DLL file. </param>
+            internal static void LoadWrapper(EmotionDetectionAsset eda, String dllPath)
+            {
+                if (wrapperDllHandle != IntPtr.Zero)
+                {
+                    eda.Log(Severity.Warning, "Wrapper dll is already loaded!");
+
+                    return;
+                }
+
+                String dllName = String.Empty;
+
+                switch (Is64BitProcess)
+                {
+                    case true:
+                        eda.Log(Severity.Verbose, "Running on a 64 bit Operating System");
+
+                        dllPath = Path.Combine(dllPath, wrapper64);
+
+                        break;
+
+                    case false:
+                        eda.Log(Severity.Verbose, "Running on a 32 bit Operating System");
+
+                        dllPath = Path.Combine(dllPath, wrapper32);
+
+                        break;
+                }
+
+                wrapperDllHandle = LoadLibrary(dllPath);
+
+                if (wrapperDllHandle != IntPtr.Zero)
+                {
+                    eda.Log(Severity.Verbose, "Loaded {0} as wrapper", dllPath);
+
+                    //! 1
+                    InitDetector = (InitDetectorDelagate)GetDelegate(eda, "InitDetector", typeof(InitDetectorDelagate));
+
+                    //! 2
+                    InitDatabase = (InitDatabaseDelegate)GetDelegate(eda, "InitDatabase", typeof(InitDatabaseDelegate));
+
+                    //! 3
+                    SetImageToBmp = (SetImageToBmpDelegate)GetDelegate(eda, "SetImageToBmp", typeof(SetImageToBmpDelegate));
+
+                    //! 4
+                    SetImageToRGB = (SetImageToRGBDelegate)GetDelegate(eda, "SetImageToRGB", typeof(SetImageToRGBDelegate));
+
+                    //! 5
+                    SetImageToRGBA = (SetImageToRGBADelegate)GetDelegate(eda, "SetImageToRGBA", typeof(SetImageToRGBADelegate));
+
+                    //! 6
+                    DetectFaces = (DetectFacesDelegate)GetDelegate(eda, "DetectFaces", typeof(DetectFacesDelegate));
+
+                    //! 7
+                    DetectLandmarks = (DetectLandmarksDelegate)GetDelegate(eda, "DetectLandmarks", typeof(DetectLandmarksDelegate));
+
+                    //! 8
+                    DetectFacesOld = (DetectFacesOldDelegate)GetDelegate(eda, "DetectFacesOld", typeof(DetectFacesOldDelegate));
+                }
+            }
+
+            /// <summary>
+            /// Gets a delegate.
+            /// </summary>
+            ///
+            /// <exception cref="EntryPointNotFoundException">
+            /// Thrown when an Entry Point Not Found error
+            /// condition occurs. </exception>
+            ///
+            /// <param name="eda">          The eda. </param>
+            /// <param name="procName">     Name of the proc. </param>
+            /// <param name="delegateType"> Type of the delegate. </param>
+            private static Delegate GetDelegate(EmotionDetectionAsset eda, string procName, Type delegateType)
+            {
+                IntPtr procAdress = GetProcAddress(wrapperDllHandle, procName);
+
+                if (procAdress == IntPtr.Zero)
+                {
+                    throw new EntryPointNotFoundException("Wrapper function: " + procName);
+                }
+
+                try
+                {
+                    return Marshal.GetDelegateForFunctionPointer(procAdress, delegateType);
+                }
+                catch (ArgumentNullException e)
+                {
+                    eda.Log(Severity.Warning, e.Message);
+                }
+                catch (ArgumentException e)
+                {
+                    eda.Log(Severity.Warning, e.Message);
+                }
+
+                return null;
+            }
+
             #region Methods
+
+            /// <summary>
+            /// Sets Image to Bitmap.
+            /// </summary>
+            ///
+            /// <param name="img">      The image. </param>
+            /// <param name="length">   The length. </param>
+            ///
+            /// <returns>
+            /// A bool.
+            /// </returns>
+            internal delegate bool SetImageToBmpDelegate(
+                [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
+                Int32 length);
+
+            /// <summary>
+            /// Sets Image to RGB Array.
+            /// </summary>
+            ///
+            /// <param name="img">      The image. </param>
+            /// <param name="width">    The length. </param>
+            /// <param name="height">   The height. </param>
+            /// <param name="flip">     True to flip. </param>
+            ///
+            /// <returns>
+            /// A bool.
+            /// </returns>
+            internal delegate bool SetImageToRGBDelegate(
+                [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
+                Int32 width,
+                Int32 height,
+                Boolean flip);
+
+            /// <summary>
+            /// Sets Image to RGBA Array.
+            /// </summary>
+            ///
+            /// <param name="img">      The image. </param>
+            /// <param name="width">    The length. </param>
+            /// <param name="height">   The height. </param>
+            /// <param name="flip">     True to flip. </param>
+            ///
+            /// <returns>
+            /// A bool.
+            /// </returns>
+            internal delegate bool SetImageToRGBADelegate(
+                [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
+                Int32 width,
+                Int32 height,
+                Boolean flip);
+
+            /// <summary>
+            /// Detect faces.
+            /// </summary>
+            ///
+            /// <param name="faces">        [out] The faces. </param>
+            /// <param name="facecount">    [out] The facecount. </param>
+            internal delegate void DetectFacesDelegate(
+                out IntPtr faces,
+                out int facecount);
 
             /// <summary>
             /// Detect faces.
@@ -1145,12 +1483,7 @@ namespace AssetPackage
             /// <param name="length">       The length. </param>
             /// <param name="faces">        [out] The faces. </param>
             /// <param name="facecount">    [out] The facecount. </param>
-            [DllImport(wrapper,
-                CharSet = CharSet.Auto,
-                EntryPoint = "DetectFaces",
-                SetLastError = true,
-                CallingConvention = CallingConvention.Cdecl)]
-            internal static extern void DetectFaces(
+            internal delegate void DetectFacesOldDelegate(
                 [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1)] byte[] img,
                 Int32 length,
                 out IntPtr faces,
@@ -1163,12 +1496,8 @@ namespace AssetPackage
             /// <param name="face">         The face. </param>
             /// <param name="landmarks">    [out] The landmarks. </param>
             /// <param name="markcount">    [out] The markcount. </param>
-            [DllImport(wrapper,
-                CharSet = CharSet.Auto,
-                EntryPoint = "DetectLandmarks",
-                SetLastError = true,
-                CallingConvention = CallingConvention.Cdecl)]
-            internal static extern void DetectLandmarks(RECT face, out IntPtr landmarks, out int markcount);
+            //[DllImport(wrapper,
+            internal delegate void DetectLandmarksDelegate(RECT face, out IntPtr landmarks, out int markcount);
 
             /// <summary>
             /// Init database.
@@ -1179,22 +1508,12 @@ namespace AssetPackage
             /// <returns>
             /// An int.
             /// </returns>
-            [DllImport(wrapper,
-                CharSet = CharSet.Auto,
-                EntryPoint = "InitDatabase",
-                SetLastError = true,
-                CallingConvention = CallingConvention.Cdecl)]
-            internal static extern int InitDatabase([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+            internal delegate int InitDatabaseDelegate([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
 
             /// <summary>
             /// Init detector.
             /// </summary>
-            [DllImport(wrapper,
-                CharSet = CharSet.Auto,
-                EntryPoint = "InitDetector",
-                SetLastError = true,
-                CallingConvention = CallingConvention.Cdecl)]
-            internal static extern void InitDetector();
+            internal delegate void InitDetectorDelagate();
 
             #endregion Methods
         }

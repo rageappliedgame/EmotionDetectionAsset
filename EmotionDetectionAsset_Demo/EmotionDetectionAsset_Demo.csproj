@@ -97,6 +97,7 @@
     </Compile>
     <None Include="..\data\shape_predictor_68_face_landmarks.dat">
       <Link>shape_predictor_68_face_landmarks.dat</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -113,27 +114,32 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AssetManager\RageAssetManager\AssetManager.csproj">
+    <Content Include="..\build\Release\dlibwrapper_x64.dll">
+      <Link>dlibwrapper_x64.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\build\Release\dlibwrapper_x86.dll">
+      <Link>dlibwrapper_x86.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="..\data\FURIA Fuzzy Logic Rules.txt">
+      <Link>FURIA Fuzzy Logic Rules.txt</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Content Include="..\testinput\Kiavash1.jpg">
+      <Link>Kiavash1.jpg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\..\Rage\AssetManager\RageAssetManager\RageAssetManager.csproj">
       <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
-      <Name>AssetManager</Name>
+      <Name>RageAssetManager</Name>
     </ProjectReference>
     <ProjectReference Include="..\EmotionDetectionAsset\EmotionDetectionAsset.csproj">
       <Project>{4d1f98c7-6827-4f99-b676-f5c9af632609}</Project>
       <Name>EmotionDetectionAsset</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\build\Release\dlibwrapper.dll">
-      <Link>dlibwrapper.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\data\FURIA Fuzzy Logic Rules.txt">
-      <Link>FURIA Fuzzy Logic Rules.txt</Link>
-    </Content>
-    <Content Include="..\testinput\Kiavash1.jpg">
-      <Link>Kiavash1.jpg</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Accord.3.3.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.3.0\build\Accord.targets')" />
