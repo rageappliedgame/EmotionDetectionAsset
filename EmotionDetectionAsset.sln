@@ -23,6 +23,32 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageAssetManager", "..\..\.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RageAssetManager - Portable", "..\..\..\..\..\..\Rage\AssetManager\RageAssetManager_Portable\RageAssetManager - Portable.csproj", "{024AAB6F-56CE-4295-94E7-F7177C918E39}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wrapper", "wrapper", "{C5469447-1BAA-4986-89EF-B1784BA6D556}"
+	ProjectSection(SolutionItems) = preProject
+		wrapper\dlibwrapper.cpp = wrapper\dlibwrapper.cpp
+		wrapper\dlibwrapper.h = wrapper\dlibwrapper.h
+		wrapper\dlibwrapper.vcxproj = wrapper\dlibwrapper.vcxproj
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data", "data", "{807899D0-26A5-468B-9847-3F0D66A40DD5}"
+	ProjectSection(SolutionItems) = preProject
+		data\FURIA Fuzzy Logic Rules.txt = data\FURIA Fuzzy Logic Rules.txt
+		data\shape_predictor_68_face_landmarks.dat = data\shape_predictor_68_face_landmarks.dat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testinput", "testinput", "{26E7F279-F434-41FA-8518-674082105163}"
+	ProjectSection(SolutionItems) = preProject
+		testinput\Kiavash1.jpg = testinput\Kiavash1.jpg
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{5CDA810B-6FE7-4BDA-ABC8-55E757FF9A9D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{0E855840-A4EA-499B-BC26-62692B266181}"
+	ProjectSection(SolutionItems) = preProject
+		build\Release\dlibwrapper_x64.dll = build\Release\dlibwrapper_x64.dll
+		build\Release\dlibwrapper_x86.dll = build\Release\dlibwrapper_x86.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -202,5 +228,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0E855840-A4EA-499B-BC26-62692B266181} = {5CDA810B-6FE7-4BDA-ABC8-55E757FF9A9D}
 	EndGlobalSection
 EndGlobal
