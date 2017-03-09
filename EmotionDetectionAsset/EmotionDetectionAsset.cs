@@ -735,38 +735,38 @@ namespace AssetPackage
                     new Rectangle(0, 0, bmp.Width, bmp.Height),
                     PixelFormat.Format24bppRgb).ToByteArray()
                 : ((Bitmap)bmp).ToByteArray();
+            /*
+            #warning TEST CODE New Exported Methods
 
-#warning TEST CODE New Exported Methods
+                        // See https://msdn.microsoft.com/en-us/library/5ey6h79d(v=vs.110).aspx
 
-            // See https://msdn.microsoft.com/en-us/library/5ey6h79d(v=vs.110).aspx
+                        //! 1) Lock the bitmap's bits.  
+                        Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
 
-            //! 1) Lock the bitmap's bits.  
-            Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                        BitmapData bmpData =
+                         ((Bitmap)bmp).LockBits(rect, ImageLockMode.ReadOnly,
+                            bmp.PixelFormat);
 
-            BitmapData bmpData =
-             ((Bitmap)bmp).LockBits(rect, ImageLockMode.ReadOnly,
-                bmp.PixelFormat);
+                        //! 2) Get the address of the first line.
+                        IntPtr ptr = bmpData.Scan0;
 
-            //! 2) Get the address of the first line.
-            IntPtr ptr = bmpData.Scan0;
+                        //! 3) Declare an array to hold the bytes of the bitmap.
+                        int bytes = Math.Abs(bmpData.Stride) * bmp.Height;
+                        raw = new byte[bytes];
 
-            //! 3) Declare an array to hold the bytes of the bitmap.
-            int bytes = Math.Abs(bmpData.Stride) * bmp.Height;
-            raw = new byte[bytes];
+                        //! 4) Copy the RGB values into the array.
+                        Marshal.Copy(ptr, raw, 0, bytes);
 
-            //! 4) Copy the RGB values into the array.
-            Marshal.Copy(ptr, raw, 0, bytes);
+                        //! 5) Unlock the bits.
+                        ((Bitmap)bmp).UnlockBits(bmpData);
 
-            //! 5) Unlock the bits.
-            ((Bitmap)bmp).UnlockBits(bmpData);
+            #warning DEBUG CODE
 
-#warning DEBUG CODE
+                        Color pixel = ((Bitmap)bmp).GetPixel(0, 0);
 
-            Color pixel = ((Bitmap)bmp).GetPixel(0, 0);
-
-            // ARGB [255] 229 198 154 Format24bppRgb
-            Log(Severity.Verbose, "ARGB [{0}] {1} {2} {3} {4}", pixel.A, pixel.R, pixel.G, pixel.B, bmp.PixelFormat.ToString());
-
+                        // ARGB [255] 229 198 154 Format24bppRgb
+                        Log(Severity.Verbose, "ARGB [{0}] {1} {2} {3} {4}", pixel.A, pixel.R, pixel.G, pixel.B, bmp.PixelFormat.ToString());
+            */
             //DlibWrapper.SetImageToBmp(raw, raw.Length);
 
 #warning This code must be more versatile to support more formats
@@ -777,7 +777,9 @@ namespace AssetPackage
             {
                 // No need to flip Image.
                 // 
-                if (DlibWrapper.SetImageToRGBA(raw, bmp.Width, bmp.Height, false))
+                if (
+                    //DlibWrapper.SetImageToRGBA(raw, bmp.Width, bmp.Height, false)
+                    DlibWrapper.SetImageToBmp(raw, raw.Length))
                 {
                     DetectFacesInImage();
                 }

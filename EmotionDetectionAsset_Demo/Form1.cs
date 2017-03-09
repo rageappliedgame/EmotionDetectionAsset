@@ -71,7 +71,7 @@ namespace dlib_csharp
 
         Boolean busy = false;
         Int32 counter = 0;
-        EmotionDetectionAsset eda = new EmotionDetectionAsset();
+        EmotionDetectionAsset eda;
         Boolean facedetected = false;
         List<RECT> Faces = new List<RECT>();
         List<POINT> Landmarks = new List<POINT>();
@@ -707,6 +707,8 @@ namespace dlib_csharp
             this.webCamCapture1.CaptureWidth = this.pictureBox1.Width;
 
             AssetManager.Instance.Bridge = new Bridge();
+
+            eda = new EmotionDetectionAsset();
 
             eda.Initialize(@".\", database);
 
