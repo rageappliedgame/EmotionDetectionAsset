@@ -773,26 +773,33 @@ namespace AssetPackage
 
             // See https://msdn.microsoft.com/en-us/library/system.drawing.imaging.pixelformat(v=vs.110).aspx
 
-            if (bmp.PixelFormat == PixelFormat.Format32bppPArgb || bmp.PixelFormat == PixelFormat.Format32bppArgb)
+            //! No need to test pixelformat any further as raw contains either a supported pixel depth or is a to 24 bits converted image.
+            // 
+            if (DlibWrapper.SetImageToBmp(raw, raw.Length))
             {
-                // No need to flip Image.
-                // 
-                if (
-                    //DlibWrapper.SetImageToRGBA(raw, bmp.Width, bmp.Height, false)
-                    DlibWrapper.SetImageToBmp(raw, raw.Length))
-                {
-                    DetectFacesInImage();
-                }
+                DetectFacesInImage();
             }
-            else
-            {
-                // No need to flip Image.
-                // 
-                if (DlibWrapper.SetImageToRGB(raw, bmp.Width, bmp.Height, false))
-                {
-                    DetectFacesInImage();
-                }
-            }
+
+            //if (bmp.PixelFormat == PixelFormat.Format32bppPArgb || bmp.PixelFormat == PixelFormat.Format32bppArgb)
+            //{
+            // No need to flip Image.
+            // 
+            //if (
+            //    //DlibWrapper.SetImageToRGBA(raw, bmp.Width, bmp.Height, false)
+            //    DlibWrapper.SetImageToBmp(raw, raw.Length))
+            //{
+            //    DetectFacesInImage();
+            //}
+            //}
+            //else
+            //{
+            //    // No need to flip Image.
+            //    // 
+            //    if (DlibWrapper.SetImageToRGB(raw, bmp.Width, bmp.Height, false))
+            //    {
+            //        DetectFacesInImage();
+            //    }
+            //}
 
             return Faces.Count != 0;
         }

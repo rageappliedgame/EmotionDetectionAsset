@@ -344,18 +344,25 @@ namespace dlib_csharp
             (eda.Settings as EmotionDetectionAssetSettings).Average = 1;
             (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = false;
 
-            pictureBox1.Image = Image.FromFile(face3);
+            openFileDialog2.InitialDirectory = Path.GetDirectoryName(face3);
+            openFileDialog2.FileName = Path.GetFileName(face3);
 
-            // First pixel of Kiavash1.bmp
-            // R 229
-            // G 198
-            // B 154
-            ProcessImageIntoEmotions(pictureBox1.Image, true);
+            if (openFileDialog2.ShowDialog() == DialogResult.OK)
+            {
+                //! Open video file
+                pictureBox1.Image = Image.FromFile(openFileDialog2.FileName);
 
-            //! Restore of both spike detection and averaging.
-            //
-            (eda.Settings as EmotionDetectionAssetSettings).Average = avg;
-            (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = spike;
+                // First pixel of Kiavash1.bmp
+                // R 229
+                // G 198
+                // B 154
+                ProcessImageIntoEmotions(pictureBox1.Image, true);
+
+                //! Restore of both spike detection and averaging.
+                //
+                (eda.Settings as EmotionDetectionAssetSettings).Average = avg;
+                (eda.Settings as EmotionDetectionAssetSettings).SuppressSpikes = spike;
+            }
         }
 
         /// <summary>
