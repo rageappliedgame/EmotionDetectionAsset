@@ -199,6 +199,9 @@ extern bool SetImageToRGB(byte* bytes, int width, int height, bool flip) {
 		int start = height - 1;
 
 		for (int row = 0; row < height; row++) {
+
+			int fr = flip ? start - row : row;
+
 			for (int col = 0; col < width; col++) {
 				if (in.sgetn(reinterpret_cast<char*>(buf), 3) != 3)
 				{
@@ -212,7 +215,7 @@ extern bool SetImageToRGB(byte* bytes, int width, int height, bool flip) {
 				p.green = buf[1];
 				p.blue = buf[2];
 
-				assign_pixel(img[flip ? start - row : row][col], p);
+				assign_pixel(img[fr][col], p);
 			}
 		}
 
@@ -222,6 +225,8 @@ extern bool SetImageToRGB(byte* bytes, int width, int height, bool flip) {
 		//		_RPT4(_CRT_WARN, "row:%4d R:%3d G:%3d B:%3d\n", row, rp.red, rp.green, rp.blue);
 		//	}
 		//}
+
+		//intarray2bmp("dump.bmp", img, height, width);
 	}
 
 	return true;
@@ -276,6 +281,9 @@ extern bool SetImageToRGBA(byte* bytes, int width, int height, bool flip) {
 
 		// Ignore Alpha Information.
 		for (int row = 0; row < height; row++) {
+
+			int fr = flip ? start - row : row;
+
 			for (int col = 0; col < width; col++) {
 				if (in.sgetn(reinterpret_cast<char*>(buf), 4) != 4)
 				{
@@ -290,7 +298,7 @@ extern bool SetImageToRGBA(byte* bytes, int width, int height, bool flip) {
 				p.blue = buf[2];
 				//p.alpha = buf[3];
 
-				assign_pixel(img[flip ? start - row : row][col], p);
+				assign_pixel(img[fr][col], p);
 			}
 		}
 
@@ -300,6 +308,8 @@ extern bool SetImageToRGBA(byte* bytes, int width, int height, bool flip) {
 		//		_RPT4(_CRT_WARN, "row:%4d R:%3d G:%3d B:%3d\n", row, rp.red, rp.green, rp.blue);
 		//	}
 		//}
+
+		//intarray2bmp("dump.bmp", img, height, width);
 	}
 
 	return true;
