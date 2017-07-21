@@ -21,13 +21,11 @@ In order to be able to work with the EmotioDetectionAsset you require to compile
 You may compile it to two versions: 1) the 32 version and 2) the 64 bits version.
  
 Introduction
-
 The wrapper includes two files to expose face detection and landmark detection in the C# version of the EmotionDetectionAsset:
 1)	Dlibwrapper.cpp
 2)	Dlibwrapper.h
 
 Toolchain Setup
-
 You can download the dlib from http://dlib.net/. You can configure the dlib using the CMAKE GUI tool. It is availabel at http://www.cmake.org/.
 
 You really need the two 32 and 64 version of the dlibwrapper in order to use them on you Unity3D game engine or on your Windows applications
@@ -35,44 +33,54 @@ Please note that the Unity3D may require two different versions of the dlibwrapp
 This can happen when you use the library on your IDE. 
 
 Dlib Setup
-The easiest way to do this is to download dlib and unzip it twice in difference directories. In the example an x86 and an x64 suffix is added to the directory names to keep them apart.
-Each dlib install is configured using CMake-GUI:
- 
+In order to make two different version of the dlib, the easiest way is to download the dlib and unzip it twice in difference directories. 
+So, you can keep the both 86 and 64 versions apart from ach other.
+Bear in mind that each dlib install is configured using the CMake-GUI.
 
-The files to be configured are located in the /examples directory of the dlib copy. It is important to add a /build/ suffix to the build directory. This keeps sources, generated project, solution files and compiled binaries apart from each other.
+The files that required to get configured are located in the /examples directory of the dlib copy. 
+It is important to add a /build/ suffix to the build directory. 
+This keeps sources, generated project, solution files and compiled binaries apart from each other.
+
 Adding Dlib Wrapper Sources to Dlib
-Next step is to copy the two wrapper source files into the examples directory and add two lines to the CMakeList.txt file like for the x86 (or 32 bits) version:
- 
+Copy the two wrapper source files into the examples directory and add the following two lines in the CMakeList.txt file 
+for the 86 version:
 
-Add a similar two lines for the x64 (64 bits version):
+add_library(dlibwrapper_x86 SHARED dlibwrapper.cpp dlibwrapper.h
+target_link_libraries(dlibwrapper x86 dlib)
  
+Add a similar two lines for the 64 bit version:
 
-Note the _x86 and _x64 suffixes that are used to keep the two wrapper dynamic link libraries apart. 
+add_library(dlibwrapper_x64 SHARED dlibwrapper.cpp dlibwrapper.h
+target_link_libraries(dlibwrapper x64 dlib)
+
+Note the _x86 and _x64 suffixes are used to keep the two wrapper apart. 
+
 The EmotionDetectionAsset will automatically load the version matching the Operating System and/or application preferences.
-Configuring dlib installations and generate project and solution files.
-Next step is to start CMake-GUI, configure each project and generate C++ project files and a solution used to compile dlib and examples.
- 
 
-Depending on the target hardware you can check USE_SSE2_INSTRUCTIONS and optionally USE_SSE4_INSTRUCTIONS. USE_AVX_INSTRUCTIONS also speeds up detection but seems to be less supported. Running the wrapper on a system without instruction support will result in an application crash.
-When pressing Configure you get a prompt for the compiler choice. For x86 choose Visual Studio 2015 (or Visual Studio 2017) like:
- 
 
-For x64 choose Visual Studio 2015 Win64 (or Visual Studio 2017 Win64) like:
- 
+Configuring dlib installations and generate project and solution files
 
-Next action is to press the configure button. You might get a prompt to create the missing build directory:
- 
-
-After this CMAKE-GUI will show: 
- 
-The final step for both x86 and x64 dlib installs is to press generate which will generate a set of C++ project files and a solution containing them. These files will be located in the Examples/Build directory.
+1. Start CMake-GUI, configure each project, and generate C++ project files and a solution that will be used in the compiled dlib and examples.
+2. Depending on the target hardware you can check USE_SSE2_INSTRUCTIONS and optionally USE_SSE4_INSTRUCTIONS. 
+USE_AVX_INSTRUCTIONS speeds up detection, but seems to be less supported. 
+Running the wrapper on a system without instruction support will result in an application crash.
+3. When pressing Configure you get a prompt for the compiler choice. 
+4. For the 86 version you can choose Visual Studio 2015 or Visual Studio 2017.
+5. For x64 choose Visual Studio 2015 Win64 or Visual Studio 2017 Win64.
+6. Then press the configure button. 
+7. You might get a prompt to create the missing build directory.
+8. Then the CMAKE-GUI will appear.
+9. Finally, to install the both 86 and 64 bit versions of the dlib, you can press generate button. 
+10. This will allow you to generate a set of C++ project files and a solution containing them. 
+These files will be located in the Examples/Build directory.
 
 Compiling dlib installations
-Opening the generated solution files should show the dlibwrapper project like:
- 
+Opening the generated solution files should show the dlibwrapper project.
+Please note that the dll’s should be compiled as a Release build. 
+Otherwise using the other build types including MinSizeRel will be very slow (100 to 1000 times slower).
 
-NOTE: The dll’s should be compiled as a Release build as the other build types including MinSizeRel are very slow (100 to 1000 times slower).
-Adding compiled dlibwrapper output to EmotionDetectionAsset.
-The resulting two dll’s should be copied into the build/Release directory of the EmotionDetectionAsset and if needed into the Asset directory of a Unity3D project. During compilation of the EmotionDetectionAsset and its demo the wrappers will be copied into the project appropriate output directories
-
-
+Adding compiled dlibwrapper output to EmotionDetectionAsset
+The two generated dll files should be copied into the build/Release directory of the EmotionDetectionAsset.
+Furthermore, they should be copied into the Asset directory of a Unity3D project if needed. 
+The two generated dll file wrappers should be copied into the project appropriate output directories.
+This should be done when you want to compile the EmotionDetectionAsset and its demo.
