@@ -1,8 +1,59 @@
 
 Design Document
 
-By Kiavash Bahreini
+Author: Kiavash Bahreini
 
-RAGE Project - Task 2.3a – Emotion Detection Asset (Client-side and Real-time)
+Organization: Open University of the Netherlands (OUNL).
+
+Task: T2.3 of the RAGE project - Emotion Detection Asset (Client-side and Real-time). 
+
+The project website is http://rageproject.eu.
+
+For any questions please contact: 
+
+Kiavash Bahreini via kiavash.bahreini [AT] ou [DOT] nl
 
 Design goals
+
+This asset is a client side software component that can detect emotions from players’ faces. 
+The software detects emotions in real-time. 
+It returns a string representing six basic emotions: happiness, sadness, surprise, fear, disgust, and anger. 
+It can also detect the neutral face.
+
+The client side version is designed to run directly in the client applications including games and serious games. 
+It is possible to use it for instance in games for communication training and conflict management. 
+It is alos possible to use it in games to collect emotion data during play testing.
+
+
+Integration
+
+You can easily integrate this module on your game or your software application as follows:
+
+1. Clone your asset in you 'Asset' folder.
+
+2. You need to use an external library called dlib. 
+We have wrapped up the required dlib files in two dll files called dlib wrapper 64 and 86. 
+The dlib wrapper is a C# wrapper over the dlib C++ library. 
+The Dlib's open source licensing allows you to use it in any application even in commercial applications, free of charge. 
+It is freely available at http://dlib.net.
+
+3. Make sure that the following directories have been cloned on your 'Asset' folder:
+3.1. The 'EmotionDetectionAsset': 
+That is an asset for realtime emotion detection through loading an static image file, a recorded video file, or a live webcam stream.
+3.2. The 'EmotionDetectionAsset_Demo':
+That provides a demo version of the asset.
+3.3. The 'EmotionDetectionAsset':
+That provides portable version of the asset.
+3.4. The 'EmotionDetectionAsset_Test':
+That let you test your EmotionDetectionAsset. 
+The 'EmotionDetectionAsset_Test' is not necessary and can be safely removed.
+
+Dependencies
+
+This software depends on the 'AssetManager' asset of the RAGE project. 
+You can also download it separately from https://github.com/rageappliedgame/AssetManager.
+It also depends on the 'RAGEAssetManager_Portable', which provides portable version of the AssetManager.
+You can also download it from https://github.com/rageappliedgame/AssetManager.
+
+
+
