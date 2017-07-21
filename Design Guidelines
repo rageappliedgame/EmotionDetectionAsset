@@ -40,20 +40,35 @@ It is freely available at http://dlib.net.
 3. Make sure that the following directories have been cloned on your 'Asset' folder:
 3.1. The 'EmotionDetectionAsset': 
 That is an asset for realtime emotion detection through loading an static image file, a recorded video file, or a live webcam stream.
+
 3.2. The 'EmotionDetectionAsset_Demo':
 That provides a demo version of the asset.
+
 3.3. The 'EmotionDetectionAsset':
 That provides portable version of the asset.
+
 3.4. The 'EmotionDetectionAsset_Test':
 That let you test your EmotionDetectionAsset. 
 The 'EmotionDetectionAsset_Test' is not necessary and can be safely removed.
 
 Dependencies
 
-This software depends on the 'AssetManager' asset of the RAGE project. 
+RAGE Assets:
+
+1. This software depends on the 'AssetManager' asset of the RAGE project. 
 You can also download it separately from https://github.com/rageappliedgame/AssetManager.
-It also depends on the 'RAGEAssetManager_Portable', which provides portable version of the AssetManager.
+
+2. It also depends on the 'RAGEAssetManager_Portable', which provides portable version of the AssetManager.
 You can also download it from https://github.com/rageappliedgame/AssetManager.
 
+Platform:
+
+1. Runs as a separate client-side application on Windows 7, 8, and 10.
+
+2. Runs as a demo prototype on Unity.
+
+Used by:
+All the games that want to collect player's facial expressions and provide the six basic emotions: 
+happiness, sadness, surprise, fear, disgust, and anger as well as the neutral face.
 
 
