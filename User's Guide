@@ -1,6 +1,78 @@
 
 User's Guide
 
-By Kiavash Bahreini
+Author: Kiavash Bahreini and Wim van der Vegt.
 
-RAGE Project - Task 2.3a – Emotion Detection Asset (Client-side and Real-time)
+Organization: Open University of the Netherlands (OUNL).
+
+Task: T2.3 of the RAGE project - Emotion Detection Asset (Client-side and Real-time). 
+
+The project website is http://rageproject.eu.
+
+For any questions please contact: 
+
+Kiavash Bahreini via kiavash.bahreini [AT] ou [DOT] nl
+and/or
+Wim van der Vegt via wim.vandervegt [AT] ou [DOT] nl
+
+How to compile Dlib Wrapper
+
+In order to be able to work with the EmotioDetectionAsset you require to compile the dlibwrapper dynamic link library (dll).
+You may compile it to two versions: 1) the 32 version and 2) the 64 bits version.
+ 
+Introduction
+
+The wrapper includes two files to expose face detection and landmark detection in the C# version of the EmotionDetectionAsset:
+1)	Dlibwrapper.cpp
+2)	Dlibwrapper.h
+
+Toolchain Setup
+
+You can download the dlib from http://dlib.net/. You can configure the dlib using the CMAKE GUI tool. It is availabel at http://www.cmake.org/.
+
+You really need the two 32 and 64 version of the dlibwrapper in order to use them on you Unity3D game engine or on your Windows applications
+Please note that the Unity3D may require two different versions of the dlibwrapper during the execution of a game.
+This can happen when you use the library on your IDE. 
+
+Dlib Setup
+The easiest way to do this is to download dlib and unzip it twice in difference directories. In the example an x86 and an x64 suffix is added to the directory names to keep them apart.
+Each dlib install is configured using CMake-GUI:
+ 
+
+The files to be configured are located in the /examples directory of the dlib copy. It is important to add a /build/ suffix to the build directory. This keeps sources, generated project, solution files and compiled binaries apart from each other.
+Adding Dlib Wrapper Sources to Dlib
+Next step is to copy the two wrapper source files into the examples directory and add two lines to the CMakeList.txt file like for the x86 (or 32 bits) version:
+ 
+
+Add a similar two lines for the x64 (64 bits version):
+ 
+
+Note the _x86 and _x64 suffixes that are used to keep the two wrapper dynamic link libraries apart. 
+The EmotionDetectionAsset will automatically load the version matching the Operating System and/or application preferences.
+Configuring dlib installations and generate project and solution files.
+Next step is to start CMake-GUI, configure each project and generate C++ project files and a solution used to compile dlib and examples.
+ 
+
+Depending on the target hardware you can check USE_SSE2_INSTRUCTIONS and optionally USE_SSE4_INSTRUCTIONS. USE_AVX_INSTRUCTIONS also speeds up detection but seems to be less supported. Running the wrapper on a system without instruction support will result in an application crash.
+When pressing Configure you get a prompt for the compiler choice. For x86 choose Visual Studio 2015 (or Visual Studio 2017) like:
+ 
+
+For x64 choose Visual Studio 2015 Win64 (or Visual Studio 2017 Win64) like:
+ 
+
+Next action is to press the configure button. You might get a prompt to create the missing build directory:
+ 
+
+After this CMAKE-GUI will show: 
+ 
+The final step for both x86 and x64 dlib installs is to press generate which will generate a set of C++ project files and a solution containing them. These files will be located in the Examples/Build directory.
+
+Compiling dlib installations
+Opening the generated solution files should show the dlibwrapper project like:
+ 
+
+NOTE: The dll’s should be compiled as a Release build as the other build types including MinSizeRel are very slow (100 to 1000 times slower).
+Adding compiled dlibwrapper output to EmotionDetectionAsset.
+The resulting two dll’s should be copied into the build/Release directory of the EmotionDetectionAsset and if needed into the Asset directory of a Unity3D project. During compilation of the EmotionDetectionAsset and its demo the wrappers will be copied into the project appropriate output directories
+
+
