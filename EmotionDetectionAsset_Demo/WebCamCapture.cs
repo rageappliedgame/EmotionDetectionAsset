@@ -1,9 +1,12 @@
 /*
  * Copyright 2016 Open University of the Netherlands
  *
+ * Cite this work as:
+ * Bahreini, K., van der Vegt, W. & Westera, W. Multimedia Tools and Applications (2019). https://doi.org/10.1007/s11042-019-7250-z
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * This project has received funding from the European Union’s Horizon
+ * This project has received funding from the European Unionâ€™s Horizon
  * 2020 research and innovation programme under grant agreement No 644187.
  * You may obtain a copy of the License at
  *
