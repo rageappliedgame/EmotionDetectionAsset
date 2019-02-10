@@ -13,6 +13,9 @@
  * and/or
  * Wim van der Vegt via wim.vandervegt [AT] ou [DOT] nl
  *
+ * Cite this work as:
+ * Bahreini, K., van der Vegt, W. & Westera, W. Multimedia Tools and Applications (2019). https://doi.org/10.1007/s11042-019-7250-z
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * This project has received funding from the European Union’s Horizon
