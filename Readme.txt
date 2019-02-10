@@ -12,6 +12,9 @@ Kiavash Bahreini via kiavash.bahreini [AT] ou [DOT] nl
 and/or
 Wim van der Vegt via wim.vandervegt [AT] ou [DOT] nl
 
+Cite this work as:
+Bahreini, K., van der Vegt, W. & Westera, W. Multimedia Tools and Applications (2019). https://doi.org/10.1007/s11042-019-7250-z
+
 The solution consists of seven projects:
 	- 'DLIB Wrapper' is a C# wrapper over the DLIB C++ library. Dlib's open source licensing allows you to use it in any application even in commercial applications, free of charge. It is freely available at http://dlib.net.
 	- 'EmotionDetectionAsset' is an asset for realtime emotion detection through loading an static image file, a recorded video file, or a live webcam stream.
